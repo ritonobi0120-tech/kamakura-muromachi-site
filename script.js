@@ -3,74 +3,104 @@ const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
 const STORAGE_KEY = "progress-v1";
 const MAX_HINTS = 3;
 
-const stageConfigs = Array.from({ length: 50 }, (_, index) => {
-  const stageNumber = index + 1;
-  const difficultySteps = [
-    { label: "初級", clues: 47 },
-    { label: "初級", clues: 46 },
-    { label: "初級", clues: 45 },
-    { label: "初級", clues: 44 },
-    { label: "初級", clues: 43 },
-    { label: "初級+", clues: 42 },
-    { label: "初級+", clues: 41 },
-    { label: "初級+", clues: 40 },
-    { label: "初級+", clues: 39 },
-    { label: "初級+", clues: 38 },
-    { label: "初中級", clues: 38 },
-    { label: "初中級", clues: 37 },
-    { label: "初中級", clues: 36 },
-    { label: "初中級", clues: 36 },
-    { label: "初中級", clues: 35 },
-    { label: "中級", clues: 35 },
-    { label: "中級", clues: 34 },
-    { label: "中級", clues: 34 },
-    { label: "中級", clues: 33 },
-    { label: "中級", clues: 33 },
-    { label: "中級", clues: 32 },
-    { label: "中級", clues: 32 },
-    { label: "中級", clues: 31 },
-    { label: "中級", clues: 31 },
-    { label: "中級", clues: 30 },
-    { label: "中級", clues: 30 },
-    { label: "中級", clues: 30 },
-    { label: "中級", clues: 29 },
-    { label: "中級", clues: 29 },
-    { label: "中級", clues: 29 },
-    { label: "中級", clues: 29 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 28 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 27 },
-    { label: "中級", clues: 26 },
-    { label: "中級", clues: 26 },
-  ];
-  const config = difficultySteps[index] ?? difficultySteps[difficultySteps.length - 1];
+const baseStageDefinitions = [
+  { id: 1, name: "北海道", neighbors: [2], position: { x: 58, y: 6 } },
+  { id: 2, name: "青森県", neighbors: [3, 4], position: { x: 58, y: 18 } },
+  { id: 3, name: "岩手県", neighbors: [5], position: { x: 64, y: 28 } },
+  { id: 4, name: "秋田県", neighbors: [6], position: { x: 50, y: 30 } },
+  { id: 5, name: "宮城県", neighbors: [7, 8], position: { x: 62, y: 38 } },
+  { id: 6, name: "山形県", neighbors: [7, 11], position: { x: 54, y: 40 } },
+  { id: 7, name: "福島県", neighbors: [9, 11], position: { x: 58, y: 48 } },
+  { id: 8, name: "茨城県", neighbors: [9, 15], position: { x: 68, y: 52 } },
+  { id: 9, name: "栃木県", neighbors: [10, 14], position: { x: 62, y: 54 } },
+  { id: 10, name: "群馬県", neighbors: [11, 14], position: { x: 56, y: 54 } },
+  { id: 11, name: "新潟県", neighbors: [12, 19], position: { x: 48, y: 50 } },
+  { id: 12, name: "長野県", neighbors: [13, 22], position: { x: 50, y: 60 } },
+  { id: 13, name: "山梨県", neighbors: [16, 18], position: { x: 54, y: 66 } },
+  { id: 14, name: "埼玉県", neighbors: [16, 17], position: { x: 60, y: 62 } },
+  { id: 15, name: "千葉県", neighbors: [16], position: { x: 70, y: 66 } },
+  { id: 16, name: "東京都", neighbors: [17], position: { x: 64, y: 70 } },
+  { id: 17, name: "神奈川県", neighbors: [18], position: { x: 60, y: 76 } },
+  { id: 18, name: "静岡県", neighbors: [23], position: { x: 56, y: 82 } },
+  { id: 19, name: "富山県", neighbors: [20, 22], position: { x: 42, y: 60 } },
+  { id: 20, name: "石川県", neighbors: [21], position: { x: 36, y: 54 } },
+  { id: 21, name: "福井県", neighbors: [22, 25], position: { x: 32, y: 64 } },
+  { id: 22, name: "岐阜県", neighbors: [23, 25], position: { x: 44, y: 70 } },
+  { id: 23, name: "愛知県", neighbors: [24, 29], position: { x: 48, y: 78 } },
+  { id: 24, name: "三重県", neighbors: [25, 29], position: { x: 42, y: 82 } },
+  { id: 25, name: "滋賀県", neighbors: [26], position: { x: 36, y: 74 } },
+  { id: 26, name: "京都府", neighbors: [27, 28], position: { x: 32, y: 70 } },
+  { id: 27, name: "大阪府", neighbors: [29], position: { x: 30, y: 78 } },
+  { id: 28, name: "兵庫県", neighbors: [30, 35], position: { x: 24, y: 72 } },
+  { id: 29, name: "和歌山県", neighbors: [35], position: { x: 34, y: 86 } },
+  { id: 30, name: "鳥取県", neighbors: [31, 32], position: { x: 22, y: 76 } },
+  { id: 31, name: "島根県", neighbors: [33], position: { x: 16, y: 70 } },
+  { id: 32, name: "岡山県", neighbors: [33, 36], position: { x: 24, y: 80 } },
+  { id: 33, name: "広島県", neighbors: [34, 37], position: { x: 18, y: 82 } },
+  { id: 34, name: "山口県", neighbors: [39], position: { x: 12, y: 84 } },
+  { id: 35, name: "徳島県", neighbors: [36, 38], position: { x: 30, y: 92 } },
+  { id: 36, name: "香川県", neighbors: [37], position: { x: 24, y: 90 } },
+  { id: 37, name: "愛媛県", neighbors: [39, 43], position: { x: 18, y: 88 } },
+  { id: 38, name: "高知県", neighbors: [44], position: { x: 26, y: 92 } },
+  { id: 39, name: "福岡県", neighbors: [40, 42], position: { x: 10, y: 84 } },
+  { id: 40, name: "佐賀県", neighbors: [41], position: { x: 6, y: 86 } },
+  { id: 41, name: "長崎県", neighbors: [45], position: { x: 6, y: 90 } },
+  { id: 42, name: "熊本県", neighbors: [43, 44], position: { x: 12, y: 88 } },
+  { id: 43, name: "大分県", neighbors: [44], position: { x: 8, y: 88 } },
+  { id: 44, name: "宮崎県", neighbors: [45], position: { x: 14, y: 92 } },
+  { id: 45, name: "鹿児島県", neighbors: [46], position: { x: 12, y: 94 } },
+  { id: 46, name: "沖縄県", neighbors: [47], position: { x: 28, y: 92 } },
+  { id: 47, name: "アメリカ", neighbors: [48], position: { x: 80, y: 34 } },
+  { id: 48, name: "イギリス", neighbors: [49], position: { x: 86, y: 48 } },
+  { id: 49, name: "月と太陽", neighbors: [50], position: { x: 82, y: 66 } },
+  { id: 50, name: "奈良県", neighbors: [], position: { x: 88, y: 82 } },
+];
+
+const clueSchedule = [
+  47, 47, 46, 46, 45, 44, 44, 43, 43, 42,
+  41, 41, 40, 40, 39, 38, 38, 37, 37, 36,
+  35, 35, 34, 34, 33, 32, 32, 31, 31, 30,
+  29, 29, 28, 28, 27, 26, 26, 25, 25, 24,
+  23, 23, 22, 21, 21, 20, 19, 18, 18, 17,
+];
+
+function getDifficultyLabel(clues) {
+  if (clues >= 40) return "初級";
+  if (clues >= 35) return "初級+";
+  if (clues >= 30) return "初中級";
+  if (clues >= 24) return "中級";
+  return "中級+";
+}
+
+const stageConfigs = baseStageDefinitions.map((definition, index) => {
+  const clues = clueSchedule[index] ?? clueSchedule[clueSchedule.length - 1];
   return {
-    id: stageNumber,
-    seed: 24601 + stageNumber * 73,
-    difficulty: config.label,
-    clues: config.clues,
+    ...definition,
+    seed: 24601 + definition.id * 73,
+    clues,
+    difficulty: getDifficultyLabel(clues),
+    parents: [],
   };
 });
+
+const stageById = new Map(stageConfigs.map((stage) => [stage.id, stage]));
+stageConfigs.forEach((stage) => {
+  stage.neighbors.forEach((neighborId) => {
+    const neighbor = stageById.get(neighborId);
+    if (neighbor) {
+      neighbor.parents.push(stage.id);
+    }
+  });
+});
+
+const START_STAGE_ID = stageConfigs[0]?.id ?? 1;
 
 const elements = {
   board: document.getElementById("sudokuBoard"),
   stageSelect: document.getElementById("stageSelect"),
   resetProgress: document.getElementById("resetProgress"),
   stageNumber: document.getElementById("stageNumber"),
+  stageName: document.getElementById("stageName"),
   stageDifficulty: document.getElementById("stageDifficulty"),
   currentTime: document.getElementById("currentTime"),
   bestTime: document.getElementById("bestTime"),
@@ -130,21 +160,21 @@ function loadProgress() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       return {
-        currentStage: 1,
+        currentStage: START_STAGE_ID,
         clearedStages: [],
         bestTimes: {},
       };
     }
     const parsed = JSON.parse(raw);
     return {
-      currentStage: parsed.currentStage ?? 1,
+      currentStage: parsed.currentStage ?? START_STAGE_ID,
       clearedStages: Array.isArray(parsed.clearedStages) ? parsed.clearedStages : [],
       bestTimes: parsed.bestTimes ?? {},
     };
   } catch (error) {
     console.error("Failed to parse progress", error);
     return {
-      currentStage: 1,
+      currentStage: START_STAGE_ID,
       clearedStages: [],
       bestTimes: {},
     };
@@ -155,45 +185,33 @@ function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
-function getStageParent(stageId) {
-  if (stageId === 1) return null;
-  if (stageId === 2) return 1;
-  return stageId - 2;
-}
-
 function getAvailableStageIds() {
+  const unlocked = getUnlockedStageIds();
   const cleared = new Set(progress.clearedStages);
   const available = new Set();
-  if (!cleared.has(1)) {
-    available.add(1);
-    return available;
-  }
-  const evenNext = findNextInBranch(2, cleared);
-  if (evenNext <= stageConfigs.length) {
-    available.add(evenNext);
-  }
-  const oddNext = findNextInBranch(3, cleared);
-  if (oddNext <= stageConfigs.length) {
-    available.add(oddNext);
-  }
+  unlocked.forEach((stageId) => {
+    if (!cleared.has(stageId)) {
+      available.add(stageId);
+    }
+  });
   return available;
 }
 
-function findNextInBranch(start, cleared) {
-  let stageId = start;
-  if (stageId > stageConfigs.length) return stageId;
-  while (stageId <= stageConfigs.length && cleared.has(stageId)) {
-    stageId += 2;
-  }
-  return stageId;
-}
-
 function getUnlockedStageIds() {
+  const cleared = new Set(progress.clearedStages);
   const unlocked = new Set(progress.clearedStages);
-  unlocked.add(1);
-  getAvailableStageIds().forEach((stageId) => {
-    if (stageId <= stageConfigs.length) {
-      unlocked.add(stageId);
+  const startStageId = stageConfigs[0]?.id;
+  if (startStageId) {
+    unlocked.add(startStageId);
+  }
+  stageConfigs.forEach((stage) => {
+    if (stage.parents.length === 0) {
+      unlocked.add(stage.id);
+      return;
+    }
+    const anyParentCleared = stage.parents.some((parentId) => cleared.has(parentId));
+    if (anyParentCleared) {
+      unlocked.add(stage.id);
     }
   });
   return unlocked;
@@ -208,15 +226,17 @@ function ensureStageIsPlayable(stageId) {
   if (available.length > 0) {
     return available[0];
   }
-  return 1;
+  return START_STAGE_ID;
 }
 
 function attachEventListeners() {
   elements.stageSelect.addEventListener("change", (event) => {
     const stageNumber = Number(event.target.value);
+    const targetStage = stageById.get(stageNumber);
     if (isStageLocked(stageNumber)) {
       elements.stageSelect.value = stageConfigs[currentStageIndex].id;
-      setStatus(`ステージ${stageNumber}はまだ解放されていません。`, "warning");
+      const stageLabel = targetStage ? targetStage.name : `ステージ${stageNumber}`;
+      setStatus(`${stageLabel}はまだ解放されていません。`, "warning");
       return;
     }
     loadStageById(stageNumber);
@@ -224,11 +244,11 @@ function attachEventListeners() {
 
   elements.resetProgress.addEventListener("click", () => {
     if (confirm("進行状況をリセットしますか？すべてのベストタイムも消去されます。")) {
-      progress = { currentStage: 1, clearedStages: [], bestTimes: {} };
+      progress = { currentStage: START_STAGE_ID, clearedStages: [], bestTimes: {} };
       saveProgress();
       populateStageSelect();
       updateStageMap();
-      loadStageById(1);
+      loadStageById(START_STAGE_ID);
       setStatus("進行状況をリセットしました。", "info");
     }
   });
@@ -291,6 +311,7 @@ function buildStageMap() {
   stagePositionCache.clear();
   elements.stageNodes.innerHTML = "";
   elements.stageMapSvg.innerHTML = "";
+  const drawnEdges = new Set();
   stageConfigs.forEach((stage) => {
     const position = computeStagePosition(stage.id);
     const node = document.createElement("button");
@@ -299,10 +320,15 @@ function buildStageMap() {
     node.dataset.stageId = stage.id;
     node.style.setProperty("--x", `${position.x}%`);
     node.style.setProperty("--y", `${position.y}%`);
-    node.innerHTML = `<span>${stage.id.toString().padStart(2, "0")}</span>`;
+    node.innerHTML = `
+      <span class="stage-index">${stage.id.toString().padStart(2, "0")}</span>
+      <span class="stage-label">${stage.name}</span>
+    `;
+    node.title = `${stage.name}｜${stage.difficulty}`;
+    node.setAttribute("aria-label", `${stage.name}（${stage.difficulty}）`);
     node.addEventListener("click", () => {
       if (isStageLocked(stage.id)) {
-        setStatus(`ステージ${stage.id}はまだ解放されていません。`, "warning");
+        setStatus(`${stage.name}はまだ解放されていません。`, "warning");
         return;
       }
       loadStageById(stage.id);
@@ -310,21 +336,25 @@ function buildStageMap() {
     elements.stageNodes.appendChild(node);
     stageNodes.push(node);
 
-    const parentId = getStageParent(stage.id);
-    if (parentId) {
-      const parentPosition = computeStagePosition(parentId);
+    stage.neighbors.forEach((neighborId) => {
+      const neighbor = stageById.get(neighborId);
+      if (!neighbor) return;
+      const edgeKey = `${stage.id}-${neighborId}`;
+      if (drawnEdges.has(edgeKey)) return;
+      drawnEdges.add(edgeKey);
+      const neighborPosition = computeStagePosition(neighborId);
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.dataset.parent = parentId;
-      line.dataset.child = stage.id;
-      line.setAttribute("x1", parentPosition.x);
-      line.setAttribute("y1", parentPosition.y);
-      line.setAttribute("x2", position.x);
-      line.setAttribute("y2", position.y);
+      line.dataset.from = stage.id;
+      line.dataset.to = neighborId;
+      line.setAttribute("x1", position.x);
+      line.setAttribute("y1", position.y);
+      line.setAttribute("x2", neighborPosition.x);
+      line.setAttribute("y2", neighborPosition.y);
       line.setAttribute("stroke", "currentColor");
       line.setAttribute("stroke-width", "1.6");
       line.setAttribute("stroke-linecap", "round");
       elements.stageMapSvg.appendChild(line);
-    }
+    });
   });
   updateStageMap();
 }
@@ -343,9 +373,9 @@ function updateStageMap() {
   });
   const lines = elements.stageMapSvg.querySelectorAll("line");
   lines.forEach((line) => {
-    const parentId = Number(line.dataset.parent);
-    const childId = Number(line.dataset.child);
-    const active = cleared.has(parentId) || available.has(childId) || cleared.has(childId);
+    const fromId = Number(line.dataset.from);
+    const toId = Number(line.dataset.to);
+    const active = cleared.has(fromId) || available.has(toId) || cleared.has(toId);
     line.classList.toggle("active", active);
   });
 }
@@ -354,24 +384,10 @@ function computeStagePosition(stageId) {
   if (stagePositionCache.has(stageId)) {
     return stagePositionCache.get(stageId);
   }
-  let position;
-  if (stageId === 1) {
-    position = { x: 50, y: 6 };
-  } else if (stageId % 2 === 0) {
-    const index = (stageId - 2) / 2;
-    const maxIndex = Math.max(1, Math.floor((stageConfigs.length - 2) / 2));
-    const progressRatio = Math.min(1, index / maxIndex);
-    const baseX = 27;
-    const wave = Math.sin(index * 0.7) * 6;
-    position = { x: baseX + wave, y: 18 + progressRatio * 78 };
-  } else {
-    const index = (stageId - 3) / 2;
-    const maxIndex = Math.max(1, Math.floor((stageConfigs.length - 3) / 2));
-    const progressRatio = Math.min(1, index / maxIndex);
-    const baseX = 73;
-    const wave = Math.sin(index * 0.65 + Math.PI / 3) * 6;
-    position = { x: baseX + wave, y: 18 + progressRatio * 78 };
-  }
+  const stage = stageById.get(stageId);
+  const position = stage?.position
+    ? { x: stage.position.x, y: stage.position.y }
+    : { x: 50, y: 50 };
   stagePositionCache.set(stageId, position);
   return position;
 }
@@ -382,7 +398,7 @@ function populateStageSelect() {
   stageConfigs.forEach((stage) => {
     const option = document.createElement("option");
     option.value = stage.id;
-    option.textContent = `ステージ ${stage.id.toString().padStart(2, "0")}｜${stage.difficulty}`;
+    option.textContent = `ステージ ${stage.id.toString().padStart(2, "0")}｜${stage.name}｜${stage.difficulty}`;
     if (stage.id === stageConfigs[currentStageIndex]?.id) {
       option.selected = true;
     }
@@ -420,6 +436,9 @@ function handleKeydown(event) {
   } else if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(key)) {
     moveSelection(key);
     event.preventDefault();
+  } else if (event.ctrlKey && !event.altKey && !event.metaKey && key.toLowerCase() === "o") {
+    event.preventDefault();
+    revealSolution();
   } else if (key.toLowerCase() === "h") {
     useHint();
     event.preventDefault();
@@ -485,6 +504,28 @@ function setCellValue(index, value, { silent = false } = {}) {
       previousNotes,
       newNotes: [],
     });
+  }
+  updateValidation();
+  updateHighlights();
+  checkForCompletion();
+}
+
+function revealSolution() {
+  if (!solution.length) return;
+  let anyChanged = false;
+  for (let index = 0; index < TOTAL_CELLS; index++) {
+    if (cells[index].classList.contains("locked")) continue;
+    notes[index].clear();
+    if (values[index] !== solution[index]) {
+      values[index] = solution[index];
+      anyChanged = true;
+    }
+    updateCellDisplay(index);
+  }
+  if (anyChanged) {
+    history.length = 0;
+    historyPointer = -1;
+    updateHistoryButtons();
   }
   updateValidation();
   updateHighlights();
@@ -701,8 +742,10 @@ function checkForCompletion() {
   const bestTime = progress.bestTimes[stageId];
   elements.bestTime.textContent = bestTime ? formatTime(bestTime) : "--";
   const bestUpdated = !previousBest || elapsed < previousBest;
+  const stageInfo = stageById.get(stageId);
+  const stageLabel = stageInfo ? stageInfo.name : `ステージ${stageId}`;
   setStatus(
-    `ステージクリア！タイム: ${formatTime(elapsed)}${
+    `${stageLabel}をクリア！タイム: ${formatTime(elapsed)}${
       bestUpdated ? "（ベスト更新！）" : ""
     }`,
     "success"
@@ -721,8 +764,9 @@ function isStageLocked(stageNumber) {
 }
 
 function loadStageById(stageId, restart = false) {
-  const index = Math.min(Math.max(0, stageId - 1), stageConfigs.length - 1);
-  loadStage(index, restart);
+  const index = stageConfigs.findIndex((stage) => stage.id === stageId);
+  const targetIndex = index >= 0 ? index : 0;
+  loadStage(targetIndex, restart);
 }
 
 function loadStage(stageIndex, restart = false) {
@@ -737,8 +781,10 @@ function loadStage(stageIndex, restart = false) {
   historyPointer = -1;
   hintsUsed = 0;
   updateHistoryButtons();
-  elements.stageNumber.textContent = stageConfigs[stageIndex].id;
-  elements.stageDifficulty.textContent = stageConfigs[stageIndex].difficulty;
+  const stageConfig = stageConfigs[stageIndex];
+  elements.stageNumber.textContent = stageConfig.id.toString().padStart(2, "0");
+  elements.stageName.textContent = stageConfig.name;
+  elements.stageDifficulty.textContent = stageConfig.difficulty;
   populateStageSelect();
   for (let index = 0; index < TOTAL_CELLS; index++) {
     const cell = cells[index];
@@ -755,15 +801,15 @@ function loadStage(stageIndex, restart = false) {
   updateValidation();
   resetTimer();
   startTimer();
-  progress.currentStage = stageConfigs[stageIndex].id;
+  progress.currentStage = stageConfig.id;
   saveProgress();
-  const best = progress.bestTimes[stageConfigs[stageIndex].id];
+  const best = progress.bestTimes[stageConfig.id];
   elements.bestTime.textContent = best ? formatTime(best) : "--";
   updateHintUI();
   updateStageMap();
   if (!restart) {
     setStatus(
-      `ステージ${stageConfigs[stageIndex].id}（${stageConfigs[stageIndex].difficulty}）を開始しました。`,
+      `${stageConfig.name}（ステージ${stageConfig.id.toString().padStart(2, "0")}｜${stageConfig.difficulty}）を開始しました。`,
       "info"
     );
   }

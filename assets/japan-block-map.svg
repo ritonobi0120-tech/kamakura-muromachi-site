@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1440" width="800" height="1440">
+<rect width="100%" height="100%" fill="#f7f8ff"/>
+<rect x="560" y="0" width="240" height="160" rx="16" ry="16" fill="#2ecc71" />
+<text x="680.0" y="80.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">北海道</text>
+<rect x="640" y="160" width="80" height="80" rx="16" ry="16" fill="#4a90e2" />
+<text x="680.0" y="200.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">青森</text>
+<rect x="640" y="240" width="80" height="80" rx="16" ry="16" fill="#4a90e2" />
+<text x="680.0" y="280.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">岩手</text>
+<rect x="560" y="240" width="80" height="80" rx="16" ry="16" fill="#4a90e2" />
+<text x="600.0" y="280.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">秋田</text>
+<rect x="640" y="320" width="80" height="80" rx="16" ry="16" fill="#4a90e2" />
+<text x="680.0" y="360.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">宮城</text>
+<rect x="560" y="320" width="80" height="80" rx="16" ry="16" fill="#4a90e2" />
+<text x="600.0" y="360.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">山形</text>
+<rect x="640" y="400" width="80" height="80" rx="16" ry="16" fill="#4a90e2" />
+<text x="680.0" y="440.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">福島</text>
+<rect x="720" y="480" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="760.0" y="520.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">茨城</text>
+<rect x="640" y="480" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="680.0" y="520.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">栃木</text>
+<rect x="560" y="480" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="600.0" y="520.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">群馬</text>
+<rect x="480" y="400" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="520.0" y="440.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">新潟</text>
+<rect x="560" y="560" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="600.0" y="600.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">長野</text>
+<rect x="560" y="640" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="600.0" y="680.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">山梨</text>
+<rect x="640" y="560" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="680.0" y="600.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">埼玉</text>
+<rect x="720" y="560" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="760.0" y="600.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">千葉</text>
+<rect x="640" y="640" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="680.0" y="680.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">東京</text>
+<rect x="640" y="720" width="80" height="80" rx="16" ry="16" fill="#f26ba8" />
+<text x="680.0" y="760.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">神奈川</text>
+<rect x="560" y="720" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="600.0" y="760.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">静岡</text>
+<rect x="480" y="480" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="520.0" y="520.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">富山</text>
+<rect x="400" y="480" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="440.0" y="520.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">石川</text>
+<rect x="400" y="560" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="440.0" y="600.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">福井</text>
+<rect x="480" y="560" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="520.0" y="600.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">岐阜</text>
+<rect x="480" y="640" width="80" height="80" rx="16" ry="16" fill="#2cb1a1" />
+<text x="520.0" y="680.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">愛知</text>
+<rect x="480" y="800" width="80" height="80" rx="16" ry="16" fill="#f39c12" />
+<text x="520.0" y="840.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">三重</text>
+<rect x="400" y="640" width="80" height="80" rx="16" ry="16" fill="#f39c12" />
+<text x="440.0" y="680.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">滋賀</text>
+<rect x="400" y="800" width="80" height="80" rx="16" ry="16" fill="#f39c12" />
+<text x="440.0" y="840.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">京都</text>
+<rect x="480" y="880" width="80" height="80" rx="16" ry="16" fill="#f39c12" />
+<text x="520.0" y="920.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">大阪</text>
+<rect x="320" y="880" width="80" height="80" rx="16" ry="16" fill="#f39c12" />
+<text x="360.0" y="920.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">兵庫</text>
+<rect x="480" y="960" width="80" height="80" rx="16" ry="16" fill="#f39c12" />
+<text x="520.0" y="1000.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">和歌山</text>
+<rect x="320" y="960" width="80" height="80" rx="16" ry="16" fill="#6c5ce7" />
+<text x="360.0" y="1000.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">鳥取</text>
+<rect x="240" y="960" width="80" height="80" rx="16" ry="16" fill="#6c5ce7" />
+<text x="280.0" y="1000.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">島根</text>
+<rect x="320" y="1040" width="80" height="80" rx="16" ry="16" fill="#6c5ce7" />
+<text x="360.0" y="1080.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">岡山</text>
+<rect x="320" y="1120" width="80" height="80" rx="16" ry="16" fill="#6c5ce7" />
+<text x="360.0" y="1160.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">広島</text>
+<rect x="240" y="1200" width="80" height="80" rx="16" ry="16" fill="#6c5ce7" />
+<text x="280.0" y="1240.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">山口</text>
+<rect x="560" y="960" width="80" height="80" rx="16" ry="16" fill="#9b59b6" />
+<text x="600.0" y="1000.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">徳島</text>
+<rect x="560" y="880" width="80" height="80" rx="16" ry="16" fill="#9b59b6" />
+<text x="600.0" y="920.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">香川</text>
+<rect x="400" y="1040" width="80" height="80" rx="16" ry="16" fill="#9b59b6" />
+<text x="440.0" y="1080.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">愛媛</text>
+<rect x="560" y="1040" width="80" height="80" rx="16" ry="16" fill="#9b59b6" />
+<text x="600.0" y="1080.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">高知</text>
+<rect x="160" y="1120" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="200.0" y="1160.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">福岡</text>
+<rect x="160" y="1200" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="200.0" y="1240.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">佐賀</text>
+<rect x="80" y="1200" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="120.0" y="1240.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">長崎</text>
+<rect x="240" y="1200" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="280.0" y="1240.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">熊本</text>
+<rect x="240" y="1120" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="280.0" y="1160.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">大分</text>
+<rect x="240" y="1280" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="280.0" y="1320.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">宮崎</text>
+<rect x="240" y="1360" width="80" height="80" rx="16" ry="16" fill="#3498db" />
+<text x="280.0" y="1400.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">鹿児島</text>
+<rect x="480" y="1360" width="80" height="80" rx="16" ry="16" fill="#16a085" />
+<text x="520.0" y="1400.0" fill="#ffffff" font-family="'Noto Sans JP', sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">沖縄</text>
+</svg>

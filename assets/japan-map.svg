@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 640" role="img" aria-labelledby="title desc">
+  <title id="title">日本地図</title>
+  <desc id="desc">北海道から沖縄までの島々を描いたシンプルな日本列島図</desc>
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e7f3ff" />
+      <stop offset="1" stop-color="#c2d9ff" />
+    </linearGradient>
+    <linearGradient id="land" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0" stop-color="#4f9ed8" />
+      <stop offset="0.5" stop-color="#3f86c2" />
+      <stop offset="1" stop-color="#2f6fae" />
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="rgba(255,255,255,0.85)" />
+      <stop offset="0.6" stop-color="rgba(255,255,255,0.4)" />
+      <stop offset="1" stop-color="rgba(255,255,255,0)" />
+    </linearGradient>
+    <filter id="shadow" x="-12%" y="-12%" width="124%" height="124%">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#1b3b62" flood-opacity="0.28" />
+    </filter>
+  </defs>
+  <rect width="360" height="640" fill="url(#sea)" />
+  <g filter="url(#shadow)" fill="url(#land)" stroke="#edf4ff" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M198 46 236 64 258 96 248 126 216 148 176 138 150 108 164 74 190 52z" />
+    <path d="M200 154 220 170 232 198 224 222 242 248 236 270 256 294 248 322 270 346 264 370 240 392 212 406 184 408 162 398 148 374 152 348 134 328 146 302 166 288 184 264 194 236z" />
+    <path d="M152 338 184 326 210 338 206 366 176 380 146 368z" />
+    <path d="M118 368 146 350 166 360 170 388 150 418 118 428 90 414 82 388z" />
+    <path d="M156 512 174 504 190 512 186 530 168 538 150 530z" />
+  </g>
+  <g fill="url(#shine)">
+    <path d="M190 60c-12 8-22 20-26 34-4 12-2 24 4 34l-18-16c-8-16-4-32 8-48 10-12 20-20 32-24z" />
+    <path d="M178 258c-8 18-4 36 8 50l-20 8c-12-18-12-38-2-58 8-16 22-30 38-38l10 8c-14 6-26 14-34 30z" />
+    <path d="M150 364c-10 8-16 20-14 32 2 12 10 22 22 26l-10 12c-14-6-26-20-28-36-2-14 4-28 16-38z" />
+  </g>
+</svg>

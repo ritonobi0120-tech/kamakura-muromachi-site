@@ -521,6 +521,11 @@ button.primary:hover {
   z-index: 999;
 }
 
+.stage-modal[hidden] {
+  display: none !important;
+  pointer-events: none;
+}
+
 .stage-modal__content {
   position: relative;
   background: var(--panel);

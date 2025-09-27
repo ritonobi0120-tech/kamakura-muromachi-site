@@ -1,6 +1,7 @@
 const BOARD_SIZE = 9;
 const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
 const STORAGE_KEY = "progress-v1";
+const MAX_HINTS = 3;
 
 const stageConfigs = Array.from({ length: 50 }, (_, index) => {
   const stageNumber = index + 1;
@@ -84,7 +85,10 @@ const elements = {
   redoButton: document.getElementById("redoButton"),
   restartButton: document.getElementById("restartButton"),
   numberPad: document.querySelector(".number-pad"),
-  log: document.getElementById("log"),
+  hintStatus: document.getElementById("hintStatus"),
+  statusMessage: document.getElementById("statusMessage"),
+  stageNodes: document.getElementById("stageNodes"),
+  stageMapSvg: document.querySelector(".stage-map-path"),
 };
 
 const cellTemplate = document.getElementById("cellTemplate");
@@ -103,15 +107,20 @@ let lastElapsedSeconds = 0;
 const history = [];
 let historyPointer = -1;
 let progress = loadProgress();
+let hintsUsed = 0;
+
+const stageNodes = [];
+const stagePositionCache = new Map();
 
 init();
 
 function init() {
   stageData = stageConfigs.map(generateStage);
   buildBoard();
+  buildStageMap();
   populateStageSelect();
-  const stageToLoad = clampStage(progress.currentStage || 1);
-  loadStage(stageToLoad - 1);
+  const stageToLoad = ensureStageIsPlayable(progress.currentStage || 1);
+  loadStageById(stageToLoad);
   attachEventListeners();
   updateProgressUI();
 }
@@ -146,19 +155,71 @@ function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
-function clampStage(stageNumber) {
-  return Math.min(Math.max(1, stageNumber), stageConfigs.length);
+function getStageParent(stageId) {
+  if (stageId === 1) return null;
+  if (stageId === 2) return 1;
+  return stageId - 2;
+}
+
+function getAvailableStageIds() {
+  const cleared = new Set(progress.clearedStages);
+  const available = new Set();
+  if (!cleared.has(1)) {
+    available.add(1);
+    return available;
+  }
+  const evenNext = findNextInBranch(2, cleared);
+  if (evenNext <= stageConfigs.length) {
+    available.add(evenNext);
+  }
+  const oddNext = findNextInBranch(3, cleared);
+  if (oddNext <= stageConfigs.length) {
+    available.add(oddNext);
+  }
+  return available;
+}
+
+function findNextInBranch(start, cleared) {
+  let stageId = start;
+  if (stageId > stageConfigs.length) return stageId;
+  while (stageId <= stageConfigs.length && cleared.has(stageId)) {
+    stageId += 2;
+  }
+  return stageId;
+}
+
+function getUnlockedStageIds() {
+  const unlocked = new Set(progress.clearedStages);
+  unlocked.add(1);
+  getAvailableStageIds().forEach((stageId) => {
+    if (stageId <= stageConfigs.length) {
+      unlocked.add(stageId);
+    }
+  });
+  return unlocked;
+}
+
+function ensureStageIsPlayable(stageId) {
+  const unlocked = getUnlockedStageIds();
+  if (unlocked.has(stageId)) {
+    return stageId;
+  }
+  const available = Array.from(getAvailableStageIds()).sort((a, b) => a - b);
+  if (available.length > 0) {
+    return available[0];
+  }
+  return 1;
 }
 
 function attachEventListeners() {
   elements.stageSelect.addEventListener("change", (event) => {
     const stageNumber = Number(event.target.value);
     if (isStageLocked(stageNumber)) {
-      appendLog(`ステージ${stageNumber}はまだ解放されていません。`);
       elements.stageSelect.value = stageConfigs[currentStageIndex].id;
+      setStatus(`ステージ${stageNumber}はまだ解放されていません。`, "warning");
       return;
     }
-    loadStage(stageNumber - 1);
+    loadStageById(stageNumber);
   });
 
   elements.resetProgress.addEventListener("click", () => {
@@ -166,8 +227,9 @@ function attachEventListeners() {
       progress = { currentStage: 1, clearedStages: [], bestTimes: {} };
       saveProgress();
       populateStageSelect();
-      loadStage(0);
-      appendLog("進行状況をリセットしました。");
+      updateStageMap();
+      loadStageById(1);
+      setStatus("進行状況をリセットしました。", "info");
     }
   });
 
@@ -179,12 +241,15 @@ function attachEventListeners() {
   });
 
   elements.notesToggle.addEventListener("change", () => {
-    appendLog(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ");
+    setStatus(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ", "info");
   });
 
   elements.autoCheckToggle.addEventListener("change", () => {
-    appendLog(elements.autoCheckToggle.checked ? "自動ミスチェックをオン" : "自動ミスチェックをオフ");
     updateValidation();
+    setStatus(
+      elements.autoCheckToggle.checked ? "自動ミスチェックをオン" : "自動ミスチェックをオフ",
+      "info"
+    );
   });
 
   elements.highlightToggle.addEventListener("change", () => {
@@ -198,7 +263,7 @@ function attachEventListeners() {
   elements.restartButton.addEventListener("click", () => {
     if (confirm("このステージを最初からやり直しますか？")) {
       loadStage(currentStageIndex, true);
-      appendLog("ステージをリスタートしました。");
+      setStatus("ステージを最初からやり直しました。", "info");
     }
   });
 
@@ -210,6 +275,10 @@ function buildBoard() {
   for (let index = 0; index < TOTAL_CELLS; index++) {
     const cell = cellTemplate.content.firstElementChild.cloneNode(true);
     cell.dataset.index = index;
+    const row = Math.floor(index / BOARD_SIZE);
+    const col = index % BOARD_SIZE;
+    cell.dataset.row = row;
+    cell.dataset.col = col;
     cell.addEventListener("click", () => selectCell(index));
     cells.push(cell);
     fragment.appendChild(cell);
@@ -217,8 +286,98 @@ function buildBoard() {
   elements.board.appendChild(fragment);
 }
 
+function buildStageMap() {
+  stageNodes.length = 0;
+  stagePositionCache.clear();
+  elements.stageNodes.innerHTML = "";
+  elements.stageMapSvg.innerHTML = "";
+  stageConfigs.forEach((stage) => {
+    const position = computeStagePosition(stage.id);
+    const node = document.createElement("button");
+    node.type = "button";
+    node.className = "stage-node";
+    node.dataset.stageId = stage.id;
+    node.style.setProperty("--x", `${position.x}%`);
+    node.style.setProperty("--y", `${position.y}%`);
+    node.innerHTML = `<span>${stage.id.toString().padStart(2, "0")}</span>`;
+    node.addEventListener("click", () => {
+      if (isStageLocked(stage.id)) {
+        setStatus(`ステージ${stage.id}はまだ解放されていません。`, "warning");
+        return;
+      }
+      loadStageById(stage.id);
+    });
+    elements.stageNodes.appendChild(node);
+    stageNodes.push(node);
+
+    const parentId = getStageParent(stage.id);
+    if (parentId) {
+      const parentPosition = computeStagePosition(parentId);
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.dataset.parent = parentId;
+      line.dataset.child = stage.id;
+      line.setAttribute("x1", parentPosition.x);
+      line.setAttribute("y1", parentPosition.y);
+      line.setAttribute("x2", position.x);
+      line.setAttribute("y2", position.y);
+      line.setAttribute("stroke", "currentColor");
+      line.setAttribute("stroke-width", "1.6");
+      line.setAttribute("stroke-linecap", "round");
+      elements.stageMapSvg.appendChild(line);
+    }
+  });
+  updateStageMap();
+}
+
+function updateStageMap() {
+  const unlocked = getUnlockedStageIds();
+  const available = getAvailableStageIds();
+  const cleared = new Set(progress.clearedStages);
+  const currentId = stageConfigs[currentStageIndex]?.id;
+  stageNodes.forEach((node) => {
+    const stageId = Number(node.dataset.stageId);
+    node.classList.toggle("current", stageId === currentId);
+    node.classList.toggle("cleared", cleared.has(stageId));
+    node.classList.toggle("available", available.has(stageId));
+    node.classList.toggle("locked", !unlocked.has(stageId));
+  });
+  const lines = elements.stageMapSvg.querySelectorAll("line");
+  lines.forEach((line) => {
+    const parentId = Number(line.dataset.parent);
+    const childId = Number(line.dataset.child);
+    const active = cleared.has(parentId) || available.has(childId) || cleared.has(childId);
+    line.classList.toggle("active", active);
+  });
+}
+
+function computeStagePosition(stageId) {
+  if (stagePositionCache.has(stageId)) {
+    return stagePositionCache.get(stageId);
+  }
+  let position;
+  if (stageId === 1) {
+    position = { x: 50, y: 6 };
+  } else if (stageId % 2 === 0) {
+    const index = (stageId - 2) / 2;
+    const maxIndex = Math.max(1, Math.floor((stageConfigs.length - 2) / 2));
+    const progressRatio = Math.min(1, index / maxIndex);
+    const baseX = 27;
+    const wave = Math.sin(index * 0.7) * 6;
+    position = { x: baseX + wave, y: 18 + progressRatio * 78 };
+  } else {
+    const index = (stageId - 3) / 2;
+    const maxIndex = Math.max(1, Math.floor((stageConfigs.length - 3) / 2));
+    const progressRatio = Math.min(1, index / maxIndex);
+    const baseX = 73;
+    const wave = Math.sin(index * 0.65 + Math.PI / 3) * 6;
+    position = { x: baseX + wave, y: 18 + progressRatio * 78 };
+  }
+  stagePositionCache.set(stageId, position);
+  return position;
+}
+
 function populateStageSelect() {
-  const maxUnlocked = getMaxUnlockedStage();
+  const unlocked = getUnlockedStageIds();
   elements.stageSelect.innerHTML = "";
   stageConfigs.forEach((stage) => {
     const option = document.createElement("option");
@@ -227,7 +386,7 @@ function populateStageSelect() {
     if (stage.id === stageConfigs[currentStageIndex]?.id) {
       option.selected = true;
     }
-    if (stage.id > maxUnlocked) {
+    if (!unlocked.has(stage.id)) {
       option.disabled = true;
     }
     elements.stageSelect.appendChild(option);
@@ -266,7 +425,7 @@ function handleKeydown(event) {
     event.preventDefault();
   } else if (key.toLowerCase() === "n") {
     elements.notesToggle.checked = !elements.notesToggle.checked;
-    appendLog(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ");
+    setStatus(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ", "info");
     event.preventDefault();
   }
 }
@@ -327,7 +486,6 @@ function setCellValue(index, value, { silent = false } = {}) {
       newNotes: [],
     });
   }
-  appendLog(`セル(${Math.floor(index / 9) + 1}, ${index % 9 + 1}) に${value === 0 ? "空白" : value}を入力`);
   updateValidation();
   updateHighlights();
   checkForCompletion();
@@ -350,7 +508,6 @@ function toggleNote(index, value, { silent = false } = {}) {
       newNotes: Array.from(noteSet),
     });
   }
-  appendLog(`セル(${Math.floor(index / 9) + 1}, ${index % 9 + 1}) のメモを更新`);
 }
 
 function pushHistory(entry) {
@@ -469,27 +626,34 @@ function manualCheck() {
     }
   }
   if (incorrect.length === 0) {
-    appendLog("現時点でミスはありません。引き続き頑張りましょう！");
+    setStatus("現時点でミスはありません。引き続き頑張りましょう！", "success");
   } else {
     incorrect.forEach((idx) => cells[idx].classList.add("error"));
-    appendLog(`${incorrect.length} 箇所のミスが見つかりました。赤く表示されています。`);
+    setStatus(`${incorrect.length} 箇所のミスが見つかりました。赤く表示されています。`, "warning");
   }
 }
 
 function useHint() {
+  if (hintsUsed >= MAX_HINTS) {
+    setStatus("ヒントはこれ以上使えません。", "warning");
+    return;
+  }
   const candidates = [];
   for (let index = 0; index < TOTAL_CELLS; index++) {
     if (values[index] === solution[index]) continue;
     candidates.push(index);
   }
   if (candidates.length === 0) {
-    appendLog("ヒントはありません。すでに完成しています！");
+    setStatus("ヒントはありません。すでに完成しています！", "success");
     return;
   }
   candidates.sort((a, b) => countCandidates(a) - countCandidates(b));
   const targetIndex = candidates[0];
   setCellValue(targetIndex, solution[targetIndex]);
-  appendLog("ヒントを使用しました。1マスを解答に更新しています。");
+  hintsUsed += 1;
+  updateHintUI();
+  const remaining = MAX_HINTS - hintsUsed;
+  setStatus(`ヒントを使用しました。残り${remaining}回です。`, remaining === 0 ? "warning" : "info");
 }
 
 function countCandidates(index) {
@@ -519,23 +683,30 @@ function checkForCompletion() {
   if (!values.every((value, index) => value === solution[index])) return;
   stopTimer();
   const elapsed = lastElapsedSeconds;
-  appendLog(`ステージクリア！タイム: ${formatTime(elapsed)}。`);
-  if (!progress.clearedStages.includes(stageConfigs[currentStageIndex].id)) {
-    progress.clearedStages.push(stageConfigs[currentStageIndex].id);
+  const stageId = stageConfigs[currentStageIndex].id;
+  if (!progress.clearedStages.includes(stageId)) {
+    progress.clearedStages.push(stageId);
   }
-  const best = progress.bestTimes[stageConfigs[currentStageIndex].id];
-  if (!best || elapsed < best) {
-    progress.bestTimes[stageConfigs[currentStageIndex].id] = elapsed;
-    appendLog("ベストタイムを更新しました！");
+  const previousBest = progress.bestTimes[stageId];
+  if (!previousBest || elapsed < previousBest) {
+    progress.bestTimes[stageId] = elapsed;
   }
-  if (currentStageIndex < stageConfigs.length - 1) {
-    progress.currentStage = stageConfigs[currentStageIndex + 1].id;
-    appendLog("次のステージを解放しました。プルダウンから選択できます。");
-  }
+  const nextCandidates = Array.from(getAvailableStageIds()).sort((a, b) => a - b);
+  progress.currentStage = nextCandidates[0] ?? stageId;
   saveProgress();
   populateStageSelect();
   updateProgressUI();
-  elements.bestTime.textContent = formatTime(progress.bestTimes[stageConfigs[currentStageIndex].id]);
+  updateStageMap();
+  updateHintUI();
+  const bestTime = progress.bestTimes[stageId];
+  elements.bestTime.textContent = bestTime ? formatTime(bestTime) : "--";
+  const bestUpdated = !previousBest || elapsed < previousBest;
+  setStatus(
+    `ステージクリア！タイム: ${formatTime(elapsed)}${
+      bestUpdated ? "（ベスト更新！）" : ""
+    }`,
+    "success"
+  );
 }
 
 function updateProgressUI() {
@@ -546,14 +717,12 @@ function updateProgressUI() {
 }
 
 function isStageLocked(stageNumber) {
-  const maxUnlocked = getMaxUnlockedStage();
-  return stageNumber > maxUnlocked;
+  return !getUnlockedStageIds().has(stageNumber);
 }
 
-function getMaxUnlockedStage() {
-  if (progress.clearedStages.length === 0) return 1;
-  const maxCleared = Math.max(...progress.clearedStages);
-  return Math.min(stageConfigs.length, maxCleared + 1);
+function loadStageById(stageId, restart = false) {
+  const index = Math.min(Math.max(0, stageId - 1), stageConfigs.length - 1);
+  loadStage(index, restart);
 }
 
 function loadStage(stageIndex, restart = false) {
@@ -566,6 +735,7 @@ function loadStage(stageIndex, restart = false) {
   selectedIndex = null;
   history.length = 0;
   historyPointer = -1;
+  hintsUsed = 0;
   updateHistoryButtons();
   elements.stageNumber.textContent = stageConfigs[stageIndex].id;
   elements.stageDifficulty.textContent = stageConfigs[stageIndex].difficulty;
@@ -589,8 +759,13 @@ function loadStage(stageIndex, restart = false) {
   saveProgress();
   const best = progress.bestTimes[stageConfigs[stageIndex].id];
   elements.bestTime.textContent = best ? formatTime(best) : "--";
+  updateHintUI();
+  updateStageMap();
   if (!restart) {
-    appendLog(`ステージ${stageConfigs[stageIndex].id}（${stageConfigs[stageIndex].difficulty}）を開始しました。`);
+    setStatus(
+      `ステージ${stageConfigs[stageIndex].id}（${stageConfigs[stageIndex].difficulty}）を開始しました。`,
+      "info"
+    );
   }
 }
 
@@ -633,17 +808,26 @@ function formatTime(seconds) {
   return `${mins}:${secs}`;
 }
 
-function appendLog(message) {
-  const time = new Date();
-  const timeLabel = `${time.getHours().toString().padStart(2, "0")}:${time
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}`;
-  const entry = document.createElement("p");
-  entry.textContent = `[${timeLabel}] ${message}`;
-  elements.log.prepend(entry);
-  while (elements.log.childElementCount > 20) {
-    elements.log.lastElementChild.remove();
+function setStatus(message, tone = "info") {
+  if (!elements.statusMessage) return;
+  elements.statusMessage.textContent = message;
+  elements.statusMessage.classList.remove("info", "success", "warning");
+  if (message) {
+    if (!["info", "success", "warning"].includes(tone)) {
+      tone = "info";
+    }
+    elements.statusMessage.classList.add(tone);
+  }
+}
+
+function updateHintUI() {
+  const remaining = Math.max(0, MAX_HINTS - hintsUsed);
+  if (elements.hintStatus) {
+    elements.hintStatus.textContent = `ヒント残り: ${remaining}`;
+  }
+  if (elements.hintButton) {
+    const solved = values.length > 0 && values.every((value, index) => value === solution[index]);
+    elements.hintButton.disabled = remaining === 0 || solved;
   }
 }
 

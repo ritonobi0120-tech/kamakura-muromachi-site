@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>鎌倉・室町学習ひろば</title>
+  <style>
+    /* ------------------------------
+       ベーススタイル
+    ------------------------------ */
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --accent: #2e86ab;
+      --accent-light: #72b9d6;
+      --accent-dark: #215f77;
+      --text: #1f2d3d;
+      --muted: #5f6c7b;
+      --border: #cdd5df;
+      --danger: #c0392b;
+      --success: #2ecc71;
+      font-size: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .teacher-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .teacher-toggle label {
+      font-weight: 700;
+    }
+
+    .teacher-toggle button {
+      border: 2px solid var(--accent);
+      border-radius: 999px;
+      padding: 0.3rem 1rem;
+      background: var(--surface);
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .teacher-toggle button[aria-pressed="true"] {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ------------------------------
+       タブ・ページ構造
+    ------------------------------ */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .tabs button {
+      flex: 1 1 auto;
+      min-width: 150px;
+      border: none;
+      border-radius: 0.8rem 0.8rem 0 0;
+      padding: 0.7rem 1rem;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tabs button:focus-visible {
+      outline: 3px solid var(--accent-light);
+      outline-offset: 2px;
+    }
+
+    .tabs button[aria-selected="true"] {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .tab-panel {
+      display: none;
+      background: var(--surface);
+      border-radius: 0.8rem;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      box-shadow: 0 4px 14px rgba(10, 31, 68, 0.07);
+    }
+
+    .tab-panel[aria-hidden="false"] {
+      display: block;
+    }
+
+    /* ------------------------------
+       共通コンポーネント
+    ------------------------------ */
+    .section-title {
+      font-size: 1.4rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      border-left: 6px solid var(--accent);
+      padding-left: 0.7rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .timeline-controls,
+    .term-controls,
+    .quiz-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .input {
+      border: 2px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 0.5rem 0.75rem;
+      background: #fff;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .button {
+      border-radius: 0.6rem;
+      border: none;
+      padding: 0.6rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .button.secondary {
+      background: var(--accent-light);
+      color: var(--text);
+    }
+
+    .button.danger {
+      background: var(--danger);
+    }
+
+    /* ------------------------------
+       年表セクション
+    ------------------------------ */
+    .timeline-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .timeline-item {
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--accent);
+      border-radius: 0.6rem;
+      padding: 0.75rem 1rem;
+      background: #fff;
+      display: grid;
+      gap: 0.25rem;
+    }
+
+    .timeline-year {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    /* ------------------------------
+       用語カード
+    ------------------------------ */
+    .term-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .term-card {
+      border-radius: 0.8rem;
+      border: 2px solid transparent;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(15, 28, 63, 0.08);
+      padding: 1rem;
+      position: relative;
+      min-height: 180px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .term-card:focus-within,
+    .term-card:hover {
+      border-color: var(--accent-light);
+      transform: translateY(-2px);
+    }
+
+    .term-card button {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      border: none;
+      background: none;
+      color: var(--accent);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .term-face {
+      display: block;
+    }
+
+    .term-face[aria-hidden="true"] {
+      display: none;
+    }
+
+    .term-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+    }
+
+    .term-ruby {
+      color: var(--muted);
+    }
+
+    .term-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: 0.6rem;
+      padding: 1rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    /* ------------------------------
+       人物ギャラリー
+    ------------------------------ */
+    .person-grid {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .person-card {
+      border-radius: 0.8rem;
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .person-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 0.6rem;
+      border: 2px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .person-meta {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .quiz-area {
+      border-top: 1px dashed var(--border);
+      padding-top: 1rem;
+    }
+
+    .quiz-question {
+      font-weight: 700;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .quiz-options label {
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 0.6rem;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .quiz-feedback {
+      min-height: 1.5rem;
+      font-weight: 600;
+    }
+
+    /* ------------------------------
+       練習問題
+    ------------------------------ */
+    .exercise-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .teacher-controls {
+      display: none;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    body.teacher-mode .teacher-controls {
+      display: flex;
+    }
+
+    .exercise-panel {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .question-card {
+      border: 1px solid var(--border);
+      border-radius: 0.8rem;
+      padding: 1rem;
+      background: #fff;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .answer-area {
+      margin-top: 0.75rem;
+    }
+
+    .feedback {
+      color: var(--danger);
+      font-weight: 700;
+      min-height: 1.2rem;
+    }
+
+    .score {
+      font-weight: 700;
+      display: none;
+    }
+
+    body.teacher-mode .score {
+      display: block;
+    }
+
+    #exerciseIncorrect {
+      list-style: disc;
+      padding-left: 1.25rem;
+      display: none;
+    }
+
+    body.teacher-mode #exerciseIncorrect {
+      display: block;
+    }
+
+    /* ------------------------------
+       振り返りメモ
+    ------------------------------ */
+    .reflection-area {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    textarea.reflection-input {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .saved-notice {
+      color: var(--success);
+      font-weight: 600;
+      min-height: 1.5rem;
+    }
+
+    /* ------------------------------
+       レスポンシブ
+    ------------------------------ */
+    @media (max-width: 768px) {
+      :root {
+        font-size: 17px;
+      }
+
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      .tabs button {
+        flex: 1 1 45%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>鎌倉・室町 学習ひろば</h1>
+      <div class="teacher-toggle">
+        <label id="teacher-toggle-label">先生モード</label>
+        <button id="teacherToggle" type="button" aria-pressed="false" aria-describedby="teacherToggleHint">
+          先生
+        </button>
+        <span id="teacherToggleHint" class="sr-only">押すと先生向け機能が使えます</span>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="学習内容タブ">
+      <button role="tab" id="tab-timeline" aria-controls="panel-timeline" aria-selected="true">時代の流れ</button>
+      <button role="tab" id="tab-terms" aria-controls="panel-terms" aria-selected="false">重要用語</button>
+      <button role="tab" id="tab-people" aria-controls="panel-people" aria-selected="false">人物</button>
+      <button role="tab" id="tab-exercises" aria-controls="panel-exercises" aria-selected="false">練習問題</button>
+      <button role="tab" id="tab-reflection" aria-controls="panel-reflection" aria-selected="false">振り返り</button>
+    </nav>
+
+    <!-- 時代の流れ -->
+    <section id="panel-timeline" class="tab-panel" role="tabpanel" aria-labelledby="tab-timeline" aria-hidden="false">
+      <h2 class="section-title">時代の流れ</h2>
+      <p>鎌倉・南北朝・室町の出来事を時系列で確認できます。時代フィルターやキーワードで絞り込みできます。</p>
+      <div class="timeline-controls">
+        <label>
+          <span class="sr-only">時代を選択</span>
+          <select id="timelineEraFilter" class="input" aria-label="時代フィルター">
+            <option value="all">すべての時代</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only">キーワード検索</span>
+          <input id="timelineSearch" class="input" type="search" placeholder="キーワードで検索" aria-label="出来事を検索" />
+        </label>
+      </div>
+      <ol id="timelineList" class="timeline-list" aria-live="polite"></ol>
+    </section>
+
+    <!-- 重要用語 -->
+    <section id="panel-terms" class="tab-panel" role="tabpanel" aria-labelledby="tab-terms" aria-hidden="true">
+      <h2 class="section-title">重要用語</h2>
+      <p>カードをクリックすると、表と裏が切り替わります。調べたい語句は検索してみましょう。</p>
+      <div class="term-controls">
+        <label>
+          <span class="sr-only">語句を検索</span>
+          <input id="termSearch" class="input" type="search" placeholder="語句・ふりがなで検索" aria-label="用語を検索" />
+        </label>
+      </div>
+      <div id="termList" class="grid term-grid" aria-live="polite"></div>
+    </section>
+
+    <!-- 人物 -->
+    <section id="panel-people" class="tab-panel" role="tabpanel" aria-labelledby="tab-people" aria-hidden="true">
+      <h2 class="section-title">人物ギャラリー</h2>
+      <p>人物をえらんで、活躍した出来事とつなげてみましょう。クイズに挑戦して理解を深めます。</p>
+      <div id="personList" class="grid person-grid" aria-live="polite"></div>
+      <div class="quiz-area" aria-live="polite">
+        <h3>人物ミニクイズ</h3>
+        <p id="personQuizQuestion" class="quiz-question"></p>
+        <div id="personQuizOptions" class="quiz-options"></div>
+        <p id="personQuizFeedback" class="quiz-feedback" role="status"></p>
+        <button id="personQuizNext" type="button" class="button">次の問題</button>
+      </div>
+    </section>
+
+    <!-- 練習問題 -->
+    <section id="panel-exercises" class="tab-panel" role="tabpanel" aria-labelledby="tab-exercises" aria-hidden="true">
+      <h2 class="section-title">練習問題</h2>
+      <p>10問セットの選択式または記述式に取り組めます。途中保存機能で再開できます。</p>
+      <div class="exercise-controls">
+        <div class="quiz-controls">
+          <label>
+            <input type="radio" name="exerciseMode" value="choice" checked /> 選択式
+          </label>
+          <label>
+            <input type="radio" name="exerciseMode" value="written" /> 記述式
+          </label>
+        </div>
+        <div class="quiz-controls">
+          <button id="exerciseStart" class="button">10問スタート</button>
+          <button id="exerciseReset" class="button secondary">リセット</button>
+        </div>
+        <div class="teacher-controls" aria-live="polite">
+          <label>
+            難度
+            <select id="teacherDifficulty" class="input" aria-label="難度を固定">
+              <option value="all">すべて</option>
+            </select>
+          </label>
+          <button id="teacherShuffle" class="button secondary" type="button">問題をシャッフル</button>
+          <span id="teacherScoreNote">先生モードで正答率と誤答一覧を表示します。</span>
+        </div>
+      </div>
+      <div class="exercise-panel">
+        <p class="score" aria-live="polite">正答率: <span id="exerciseScore">--</span></p>
+        <div id="exerciseQuestions" class="grid" aria-live="polite"></div>
+        <p id="exerciseFeedback" class="feedback" role="status"></p>
+        <ul id="exerciseIncorrect" class="feedback" aria-live="polite"></ul>
+      </div>
+    </section>
+
+    <!-- 振り返り -->
+    <section id="panel-reflection" class="tab-panel" role="tabpanel" aria-labelledby="tab-reflection" aria-hidden="true">
+      <h2 class="section-title">振り返りメモ</h2>
+      <p>今日学んだことや疑問をメモしておきましょう。この端末に保存されるので、あとで見返せます。</p>
+      <div class="reflection-area">
+        <label for="reflectionLearned">今日学んだこと</label>
+        <textarea id="reflectionLearned" class="input reflection-input" placeholder="2〜3行で書いてみよう"></textarea>
+        <label for="reflectionQuestions">もっと知りたいこと / 疑問</label>
+        <textarea id="reflectionQuestions" class="input reflection-input" placeholder="疑問や調べたいことを書こう"></textarea>
+        <div>
+          <button id="reflectionSave" class="button" type="button">保存する</button>
+          <button id="reflectionClear" class="button secondary" type="button">メモを消す</button>
+        </div>
+        <p id="reflectionSavedNotice" class="saved-notice" aria-live="polite"></p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------
+    // アクセシビリティ補助: 画面読み上げ用のsr-onlyクラス
+    // ------------------------------------------------------------
+    const srStyle = document.createElement('style');
+    srStyle.textContent = `
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    `;
+    document.head.appendChild(srStyle);
+
+    // ------------------------------------------------------------
+    // タブ切り替え制御
+    // ------------------------------------------------------------
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+    function activateTab(tab) {
+      tabs.forEach((btn) => {
+        const isActive = btn === tab;
+        btn.setAttribute('aria-selected', String(isActive));
+        btn.tabIndex = isActive ? 0 : -1;
+      });
+
+      panels.forEach((panel) => {
+        const isActive = panel.id === tab.getAttribute('aria-controls');
+        panel.setAttribute('aria-hidden', String(!isActive));
+      });
+
+      tab.focus();
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        const currentIndex = tabs.indexOf(tab);
+        if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          const next = tabs[(currentIndex + 1) % tabs.length];
+          activateTab(next);
+        } else if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          const prev = tabs[(currentIndex - 1 + tabs.length) % tabs.length];
+          activateTab(prev);
+        }
+      });
+    });
+
+    // ------------------------------------------------------------
+    // 先生モード制御
+    // ------------------------------------------------------------
+    const teacherToggle = document.getElementById('teacherToggle');
+    const TEACHER_STORAGE_KEY = 'km_teacher_mode';
+
+    function setTeacherMode(isOn) {
+      teacherToggle.setAttribute('aria-pressed', String(isOn));
+      teacherToggle.textContent = isOn ? '先生 ON' : '先生';
+      document.body.dataset.teacherMode = isOn ? 'true' : 'false';
+      localStorage.setItem(TEACHER_STORAGE_KEY, String(isOn));
+      updateExerciseScore();
+      if (typeof renderExerciseQuestions === 'function') {
+        renderExerciseQuestions();
+      }
+    }
+
+    teacherToggle.addEventListener('click', () => {
+      const current = teacherToggle.getAttribute('aria-pressed') === 'true';
+      setTeacherMode(!current);
+    });
+
+    // ------------------------------------------------------------
+    // 時代の流れセクション
+    // ------------------------------------------------------------
+    const timelineEraFilter = document.getElementById('timelineEraFilter');
+    const timelineSearch = document.getElementById('timelineSearch');
+    const timelineList = document.getElementById('timelineList');
+
+    function buildTimelineEraOptions() {
+      const eras = Array.from(new Set(DATA.timeline.map((item) => item.era)));
+      eras.forEach((era) => {
+        const option = document.createElement('option');
+        option.value = era;
+        option.textContent = era;
+        timelineEraFilter.appendChild(option);
+      });
+    }
+
+    function renderTimeline() {
+      const era = timelineEraFilter.value;
+      const keyword = timelineSearch.value.trim();
+      const fragment = document.createDocumentFragment();
+      DATA.timeline
+        .filter((item) => era === 'all' || item.era === era)
+        .filter((item) =>
+          keyword === ''
+            ? true
+            : [item.year, item.title, item.summary]
+                .join(' ')
+                .toLowerCase()
+                .includes(keyword.toLowerCase())
+        )
+        .forEach((item) => {
+          const li = document.createElement('li');
+          li.className = 'timeline-item';
+          li.innerHTML = `
+            <span class="timeline-year">${item.year}</span>
+            <strong>${item.title}</strong>
+            <span>${item.summary}</span>
+          `;
+          fragment.appendChild(li);
+        });
+
+      if (!fragment.children.length) {
+        const empty = document.createElement('li');
+        empty.textContent = '該当する出来事が見つかりません。キーワードを変えてみましょう。';
+        fragment.appendChild(empty);
+      }
+
+      timelineList.innerHTML = '';
+      timelineList.appendChild(fragment);
+    }
+
+    timelineEraFilter.addEventListener('change', renderTimeline);
+    timelineSearch.addEventListener('input', renderTimeline);
+
+    // ------------------------------------------------------------
+    // 重要用語セクション
+    // ------------------------------------------------------------
+    const termSearch = document.getElementById('termSearch');
+    const termList = document.getElementById('termList');
+
+    function renderTerms() {
+      const keyword = termSearch.value.trim().toLowerCase();
+      termList.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+
+      DATA.terms
+        .filter((term) =>
+          keyword === ''
+            ? true
+            : [term.term, term.kana, term.definition]
+                .join(' ')
+                .toLowerCase()
+                .includes(keyword)
+        )
+        .forEach((term, index) => {
+          const card = document.createElement('article');
+          card.className = 'term-card';
+          card.tabIndex = 0;
+          card.setAttribute('aria-labelledby', `term-${index}`);
+
+          const toggleButton = document.createElement('button');
+          toggleButton.type = 'button';
+          toggleButton.textContent = '反転';
+          toggleButton.setAttribute('aria-label', `${term.term}カードを反転`);
+
+          const front = document.createElement('div');
+          front.className = 'term-face term-front';
+          front.innerHTML = `
+            <p id="term-${index}" class="term-title">${term.term}</p>
+            <p class="term-ruby">${term.kana}</p>
+            <div class="term-placeholder">図版をここに追加予定</div>
+          `;
+
+          const back = document.createElement('div');
+          back.className = 'term-face term-back';
+          back.setAttribute('aria-hidden', 'true');
+          back.innerHTML = `<p>${term.definition}</p>`;
+
+          function flipCard() {
+            const isFrontVisible = front.getAttribute('aria-hidden') !== 'true';
+            front.setAttribute('aria-hidden', String(isFrontVisible));
+            back.setAttribute('aria-hidden', String(!isFrontVisible));
+          }
+
+          toggleButton.addEventListener('click', flipCard);
+          card.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              flipCard();
+            }
+          });
+
+          card.appendChild(toggleButton);
+          card.appendChild(front);
+          card.appendChild(back);
+          fragment.appendChild(card);
+        });
+
+      if (!fragment.children.length) {
+        const message = document.createElement('p');
+        message.textContent = '該当する用語が見つかりません。別のキーワードを試しましょう。';
+        termList.appendChild(message);
+      } else {
+        termList.appendChild(fragment);
+      }
+    }
+
+    termSearch.addEventListener('input', renderTerms);
+
+    // ------------------------------------------------------------
+    // 人物セクション & クイズ
+    // ------------------------------------------------------------
+    const personList = document.getElementById('personList');
+    const personQuizQuestion = document.getElementById('personQuizQuestion');
+    const personQuizOptions = document.getElementById('personQuizOptions');
+    const personQuizFeedback = document.getElementById('personQuizFeedback');
+    const personQuizNext = document.getElementById('personQuizNext');
+
+    let currentPersonQuiz = null;
+
+    function renderPeople() {
+      personList.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+
+      DATA.people.forEach((person, index) => {
+        const card = document.createElement('article');
+        card.className = 'person-card';
+        card.setAttribute('aria-labelledby', `person-${index}`);
+
+        card.innerHTML = `
+          <div class="person-image" role="img" aria-label="${person.name}の肖像は後で追加予定">
+            画像予定
+          </div>
+          <div>
+            <h3 id="person-${index}">${person.name}</h3>
+            <p class="person-meta">${person.kana} / 活躍: ${person.activeEra}</p>
+            <p>${person.summary}</p>
+          </div>
+          <ul>
+            ${person.achievements
+              .map((achievement) => `<li>${achievement}</li>`)
+              .join('')}
+          </ul>
+        `;
+
+        fragment.appendChild(card);
+      });
+
+      personList.appendChild(fragment);
+    }
+
+    function pickPersonQuiz() {
+      const question = DATA.personQuiz[Math.floor(Math.random() * DATA.personQuiz.length)];
+      currentPersonQuiz = question;
+      personQuizQuestion.textContent = question.prompt;
+      personQuizOptions.innerHTML = '';
+      personQuizFeedback.textContent = '';
+
+      question.options.forEach((option, index) => {
+        const id = `person-quiz-option-${index}`;
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.innerHTML = `
+          <input type="radio" name="personQuiz" id="${id}" value="${option.value}" />
+          ${option.label}
+        `;
+        personQuizOptions.appendChild(label);
+      });
+    }
+
+    personQuizOptions.addEventListener('change', (event) => {
+      const selected = event.target.value;
+      const correct = currentPersonQuiz.answer;
+      const feedbackText = selected === correct ? '正解！よくできました。' : 'おしい！もう一度考えてみよう。';
+      personQuizFeedback.textContent = feedbackText;
+    });
+
+    personQuizNext.addEventListener('click', pickPersonQuiz);
+
+    // ------------------------------------------------------------
+    // 練習問題セクション
+    // ------------------------------------------------------------
+    const EXERCISE_STORAGE_KEY = 'km_exercise_state';
+    const exerciseQuestionsContainer = document.getElementById('exerciseQuestions');
+    const exerciseStart = document.getElementById('exerciseStart');
+    const exerciseReset = document.getElementById('exerciseReset');
+    const exerciseFeedback = document.getElementById('exerciseFeedback');
+    const exerciseScore = document.getElementById('exerciseScore');
+    const teacherDifficulty = document.getElementById('teacherDifficulty');
+    const teacherShuffle = document.getElementById('teacherShuffle');
+    const teacherScoreNote = document.getElementById('teacherScoreNote');
+    const exerciseIncorrectList = document.getElementById('exerciseIncorrect');
+
+    let exerciseState = {
+      mode: 'choice',
+      responses: {},
+      score: null,
+      fixedDifficulty: 'all',
+      shuffledOrder: null,
+      shuffled: false,
+    };
+
+    function loadExerciseState() {
+      const stored = localStorage.getItem(EXERCISE_STORAGE_KEY);
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          exerciseState = { ...exerciseState, ...parsed };
+          document.querySelector(`input[name="exerciseMode"][value="${exerciseState.mode}"]`).checked = true;
+          if (teacherDifficulty) {
+            teacherDifficulty.value = exerciseState.fixedDifficulty || 'all';
+          }
+          renderExerciseQuestions();
+        } catch (error) {
+          console.error('保存データの読み込みに失敗しました', error);
+        }
+      }
+      updateExerciseScore();
+    }
+
+    function saveExerciseState() {
+      localStorage.setItem(EXERCISE_STORAGE_KEY, JSON.stringify(exerciseState));
+      updateExerciseScore();
+    }
+
+    function getFilteredQuestions() {
+      const pool = DATA.exercises[exerciseState.mode] || [];
+      const teacherMode = document.body.dataset.teacherMode === 'true';
+      let questions = [...pool];
+
+      if (teacherMode) {
+        const difficulty = exerciseState.fixedDifficulty || 'all';
+        if (difficulty !== 'all') {
+          questions = questions.filter((q) => q.difficulty === difficulty);
+        }
+      }
+
+      return questions;
+    }
+
+    function getCurrentQuestionSet() {
+      const teacherMode = document.body.dataset.teacherMode === 'true';
+      let questions = getFilteredQuestions();
+
+      if (teacherMode) {
+        if (Array.isArray(exerciseState.shuffledOrder) && exerciseState.shuffledOrder.length === questions.length) {
+          questions = exerciseState.shuffledOrder
+            .map((index) => questions[index])
+            .filter(Boolean);
+        }
+        return questions;
+      }
+
+      return questions.slice(0, 10);
+    }
+
+    function renderExerciseQuestions() {
+      const questions = getCurrentQuestionSet();
+      exerciseQuestionsContainer.innerHTML = '';
+
+      questions.forEach((question, index) => {
+        const card = document.createElement('article');
+        card.className = 'question-card';
+        card.setAttribute('aria-labelledby', `exercise-question-${index}`);
+
+        const header = document.createElement('div');
+        header.className = 'question-header';
+        header.innerHTML = `
+          <span id="exercise-question-${index}">問${index + 1}. ${question.prompt}</span>
+          <span class="badge">難度: ${question.difficulty}</span>
+        `;
+
+        const answerArea = document.createElement('div');
+        answerArea.className = 'answer-area';
+
+        if (exerciseState.mode === 'choice') {
+          question.options.forEach((option, optionIndex) => {
+            const id = `exercise-${index}-option-${optionIndex}`;
+            const label = document.createElement('label');
+            label.innerHTML = `
+              <input type="radio" name="exercise-${index}" id="${id}" value="${option.value}" />
+              ${option.label}
+            `;
+            label.querySelector('input').checked = exerciseState.responses[index] === option.value;
+            answerArea.appendChild(label);
+          });
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.className = 'input';
+          textarea.rows = 3;
+          textarea.value = exerciseState.responses[index] || '';
+          textarea.addEventListener('input', (event) => {
+            exerciseState.responses[index] = event.target.value;
+            saveExerciseState();
+          });
+          answerArea.appendChild(textarea);
+        }
+
+        card.appendChild(header);
+        card.appendChild(answerArea);
+        exerciseQuestionsContainer.appendChild(card);
+      });
+
+      if (!questions.length) {
+        exerciseQuestionsContainer.innerHTML = '<p>問題がまだ登録されていません。後で追加しましょう。</p>';
+      }
+
+      addExerciseListeners();
+    }
+
+    function addExerciseListeners() {
+      const choiceInputs = exerciseQuestionsContainer.querySelectorAll('input[type="radio"]');
+      choiceInputs.forEach((input) => {
+        input.addEventListener('change', (event) => {
+          const [_, questionIndex] = event.target.name.split('-');
+          exerciseState.responses[Number(questionIndex)] = event.target.value;
+          saveExerciseState();
+        });
+      });
+    }
+
+    function gradeExercises() {
+      const questions = getCurrentQuestionSet();
+      let correctCount = 0;
+      const incorrectDetails = [];
+
+      questions.forEach((question, index) => {
+        const answer = exerciseState.responses[index];
+        if (exerciseState.mode === 'choice') {
+          if (answer === question.answer) {
+            correctCount += 1;
+          } else {
+            incorrectDetails.push(`問${index + 1}: 正解は「${question.answerLabel}」です。`);
+          }
+        } else {
+          if (answer && answer.trim().length > 0) {
+            incorrectDetails.push(`問${index + 1}: 模範解答例 → ${question.answer}`);
+          }
+        }
+      });
+
+      const scoreRate = questions.length ? Math.round((correctCount / questions.length) * 100) : null;
+      exerciseState.score = scoreRate;
+      exerciseState.incorrect = incorrectDetails;
+      saveExerciseState();
+
+      if (scoreRate !== null) {
+        exerciseFeedback.textContent = `正答率 ${scoreRate}%。${incorrectDetails.length ? '復習ポイントを確認しましょう。' : 'すばらしい！'} `;
+      } else {
+        exerciseFeedback.textContent = '採点できる問題がありません。問題を追加してください。';
+      }
+
+      exerciseIncorrectList.innerHTML = '';
+      if (document.body.dataset.teacherMode === 'true' && incorrectDetails.length) {
+        incorrectDetails.forEach((detail) => {
+          const li = document.createElement('li');
+          li.textContent = detail;
+          exerciseIncorrectList.appendChild(li);
+        });
+      }
+    }
+
+    function updateExerciseScore() {
+      const score = exerciseState.score;
+      if (score !== null) {
+        exerciseScore.textContent = `${score}%`;
+      } else {
+        exerciseScore.textContent = '--';
+      }
+
+      const teacherMode = document.body.dataset.teacherMode === 'true';
+      document.body.classList.toggle('teacher-mode', teacherMode);
+      if (teacherDifficulty) {
+        teacherDifficulty.disabled = !teacherMode;
+      }
+      if (teacherShuffle) {
+        teacherShuffle.disabled = !teacherMode;
+      }
+      if (teacherScoreNote) {
+        teacherScoreNote.hidden = teacherMode;
+      }
+      if (!teacherMode) {
+        exerciseIncorrectList.innerHTML = '';
+        exerciseState.fixedDifficulty = 'all';
+        exerciseState.shuffledOrder = null;
+        exerciseState.shuffled = false;
+        if (teacherDifficulty) {
+          teacherDifficulty.value = 'all';
+        }
+      }
+    }
+
+    exerciseStart.addEventListener('click', () => {
+      gradeExercises();
+    });
+
+    exerciseReset.addEventListener('click', () => {
+      exerciseState.responses = {};
+      exerciseState.score = null;
+      exerciseState.incorrect = [];
+      exerciseState.fixedDifficulty = 'all';
+      exerciseState.shuffledOrder = null;
+      exerciseState.shuffled = false;
+      saveExerciseState();
+      renderExerciseQuestions();
+      exerciseFeedback.textContent = '記録をリセットしました。';
+    });
+
+    document.querySelectorAll('input[name="exerciseMode"]').forEach((input) => {
+      input.addEventListener('change', (event) => {
+        exerciseState.mode = event.target.value;
+        exerciseState.responses = {};
+        exerciseState.score = null;
+        exerciseState.fixedDifficulty = 'all';
+        exerciseState.shuffledOrder = null;
+        exerciseState.shuffled = false;
+        saveExerciseState();
+        renderExerciseQuestions();
+      });
+    });
+
+    function populateDifficultyOptions() {
+      if (!teacherDifficulty) return;
+      const difficulties = new Set(['all']);
+      Object.values(DATA.exercises).forEach((questionSet) => {
+        questionSet.forEach((question) => {
+          if (question.difficulty) {
+            difficulties.add(question.difficulty);
+          }
+        });
+      });
+
+      teacherDifficulty.innerHTML = '';
+      difficulties.forEach((difficulty) => {
+        const option = document.createElement('option');
+        option.value = difficulty;
+        option.textContent = difficulty === 'all' ? 'すべて' : difficulty;
+        teacherDifficulty.appendChild(option);
+      });
+      teacherDifficulty.value = exerciseState.fixedDifficulty || 'all';
+    }
+
+    if (teacherDifficulty) {
+      teacherDifficulty.addEventListener('change', (event) => {
+        exerciseState.fixedDifficulty = event.target.value;
+        exerciseState.shuffledOrder = null;
+        exerciseState.shuffled = false;
+        exerciseState.responses = {};
+        exerciseState.score = null;
+        saveExerciseState();
+        renderExerciseQuestions();
+      });
+    }
+
+    if (teacherShuffle) {
+      teacherShuffle.addEventListener('click', () => {
+        if (document.body.dataset.teacherMode !== 'true') return;
+        const questions = getFilteredQuestions();
+        if (!questions.length) {
+          exerciseFeedback.textContent = 'シャッフルできる問題がありません。';
+          return;
+        }
+        const order = questions.map((_, index) => index);
+        for (let i = order.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+        exerciseState.shuffledOrder = order;
+        exerciseState.shuffled = true;
+        exerciseState.responses = {};
+        exerciseState.score = null;
+        saveExerciseState();
+        renderExerciseQuestions();
+        exerciseFeedback.textContent = '問題の順番をシャッフルしました。';
+      });
+    }
+
+    // ------------------------------------------------------------
+    // 振り返りメモ
+    // ------------------------------------------------------------
+    const reflectionLearned = document.getElementById('reflectionLearned');
+    const reflectionQuestions = document.getElementById('reflectionQuestions');
+    const reflectionSave = document.getElementById('reflectionSave');
+    const reflectionClear = document.getElementById('reflectionClear');
+    const reflectionNotice = document.getElementById('reflectionSavedNotice');
+    const REFLECTION_STORAGE_KEY = 'km_reflection';
+
+    function loadReflection() {
+      const stored = localStorage.getItem(REFLECTION_STORAGE_KEY);
+      if (!stored) return;
+      try {
+        const parsed = JSON.parse(stored);
+        reflectionLearned.value = parsed.learned || '';
+        reflectionQuestions.value = parsed.questions || '';
+      } catch (error) {
+        console.error('振り返りメモの読み込みに失敗しました', error);
+      }
+    }
+
+    function saveReflection() {
+      const payload = {
+        learned: reflectionLearned.value,
+        questions: reflectionQuestions.value,
+      };
+      localStorage.setItem(REFLECTION_STORAGE_KEY, JSON.stringify(payload));
+      reflectionNotice.textContent = '保存しました！';
+      setTimeout(() => {
+        reflectionNotice.textContent = '';
+      }, 2500);
+    }
+
+    function clearReflection() {
+      localStorage.removeItem(REFLECTION_STORAGE_KEY);
+      reflectionLearned.value = '';
+      reflectionQuestions.value = '';
+      reflectionNotice.textContent = 'メモを削除しました。';
+      setTimeout(() => {
+        reflectionNotice.textContent = '';
+      }, 2500);
+    }
+
+    reflectionSave.addEventListener('click', saveReflection);
+    reflectionClear.addEventListener('click', clearReflection);
+
+    // ------------------------------------------------------------
+    // 初期化
+    // ------------------------------------------------------------
+    function init() {
+      buildTimelineEraOptions();
+      renderTimeline();
+      renderTerms();
+      renderPeople();
+      pickPersonQuiz();
+      populateDifficultyOptions();
+      const savedTeacherMode = localStorage.getItem(TEACHER_STORAGE_KEY);
+      if (savedTeacherMode !== null) {
+        setTeacherMode(savedTeacherMode === 'true');
+      } else {
+        setTeacherMode(false);
+      }
+      loadExerciseState();
+      renderExerciseQuestions();
+      updateExerciseScore();
+      loadReflection();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    // ------------------------------------------------------------
+    // ダミーデータ: 後で本番データと置き換え予定
+    // ------------------------------------------------------------
+    const DATA = {
+      timeline: [
+        { era: '鎌倉', year: '1185年', title: '鎌倉幕府の成立', summary: '源頼朝が政権を握り、武家の時代が始まる。' },
+        { era: '南北朝', year: '1336年', title: '建武の新政', summary: '後醍醐天皇による新しい政治の試み。' },
+        { era: '室町', year: '1467年', title: '応仁の乱', summary: '室町幕府の権威がゆらぎ、戦国時代へとつながる。' }
+      ],
+      terms: [
+        { term: '御成敗式目', kana: 'ごせいばいしきもく', definition: '武士のくらしをまとめた最初の法律集。' },
+        { term: '二毛作', kana: 'にもうさく', definition: '春と秋の年2回、別の作物を作る農業方法。' },
+        { term: '守護大名', kana: 'しゅごだいみょう', definition: '地方を治めた武士の有力者。' }
+      ],
+      people: [
+        {
+          name: '源 頼朝',
+          kana: 'みなもとの よりとも',
+          activeEra: '鎌倉時代',
+          summary: '鎌倉幕府を開いた武士。',
+          achievements: ['源平合戦で勝利', '武士の政権をつくる']
+        },
+        {
+          name: '足利 尊氏',
+          kana: 'あしかが たかうじ',
+          activeEra: '南北朝時代',
+          summary: '室町幕府の初代将軍。',
+          achievements: ['建武の新政に反発', '室町幕府をひらく']
+        }
+      ],
+      personQuiz: [
+        {
+          prompt: '「鎌倉幕府を開いた人物は？」',
+          options: [
+            { label: '源 頼朝', value: 'yoritomo' },
+            { label: '足利 尊氏', value: 'takauji' },
+            { label: '日蓮', value: 'nichiren' }
+          ],
+          answer: 'yoritomo',
+          answerLabel: '源 頼朝'
+        },
+        {
+          prompt: '「南北朝時代に室町幕府を開いたのは？」',
+          options: [
+            { label: '足利 尊氏', value: 'takauji' },
+            { label: '北条 時宗', value: 'tokimune' },
+            { label: '後醍醐天皇', value: 'godai' }
+          ],
+          answer: 'takauji',
+          answerLabel: '足利 尊氏'
+        }
+      ],
+      exercises: {
+        choice: [
+          {
+            prompt: '鎌倉幕府を開いた人物はだれ？',
+            options: [
+              { label: '源 頼朝', value: 'yoritomo' },
+              { label: '平 清盛', value: 'kiyomori' },
+              { label: '足利 尊氏', value: 'takauji' }
+            ],
+            answer: 'yoritomo',
+            answerLabel: '源 頼朝',
+            difficulty: '標準'
+          }
+        ],
+        written: [
+          {
+            prompt: '鎌倉時代の農業で広まった二毛作とはどんな方法？',
+            answer: '春と秋に別の作物をつくること',
+            difficulty: '標準'
+          }
+        ]
+      }
+    };
+  </script>
+</body>
+</html>

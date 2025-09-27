@@ -145,7 +145,7 @@
               ></div>
             </div>
             <p id="worldUnlockMessage" class="world-unlock-message">
-              日本全県を制覇すると海外航路が開かれます。
+              日本全県を制覇すると海外航路が開き、主要な国と月・太陽への挑戦が待っています。
             </p>
             <div
               class="world-stage-list"
@@ -161,6 +161,50 @@
               マップ上のステージを選ぶか、リストから直接ジャンプできます。
             </p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="celebration-overlay"
+      id="celebrationOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="celebrationTitle"
+      aria-describedby="celebrationMessage"
+      aria-hidden="true"
+      hidden
+    >
+      <div
+        class="celebration-overlay__backdrop"
+        id="celebrationOverlayBackdrop"
+        aria-hidden="true"
+      ></div>
+      <div class="celebration-overlay__content" id="celebrationContent" tabindex="-1">
+        <div class="celebration-overlay__fireworks" aria-hidden="true">
+          <span class="celebration-firework celebration-firework--1"></span>
+          <span class="celebration-firework celebration-firework--2"></span>
+          <span class="celebration-firework celebration-firework--3"></span>
+          <span class="celebration-firework celebration-firework--4"></span>
+          <span class="celebration-firework celebration-firework--5"></span>
+          <span class="celebration-firework celebration-firework--6"></span>
+        </div>
+        <p class="celebration-overlay__stage" id="celebrationStage"></p>
+        <h2 class="celebration-overlay__title" id="celebrationTitle">クリアおめでとう！</h2>
+        <p class="celebration-overlay__message" id="celebrationMessage"></p>
+        <div class="celebration-overlay__stats">
+          <div class="celebration-overlay__stat">
+            <span class="celebration-overlay__label">クリアタイム</span>
+            <span class="celebration-overlay__value" id="celebrationTime">--:--</span>
+          </div>
+          <div class="celebration-overlay__stat">
+            <span class="celebration-overlay__label">ベスト</span>
+            <span class="celebration-overlay__value" id="celebrationBest">--:--</span>
+          </div>
+        </div>
+        <div class="celebration-overlay__actions">
+          <button type="button" id="celebrationMapButton" class="primary">進路を選ぶ</button>
+          <button type="button" id="celebrationCloseButton" class="secondary">あとで見る</button>
         </div>
       </div>
     </div>

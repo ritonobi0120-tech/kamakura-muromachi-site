@@ -51,11 +51,17 @@ const baseStageDefinitions = [
   { id: 43, name: "大分県", neighbors: [44], position: { x: 12, y: 86 } },
   { id: 44, name: "宮崎県", neighbors: [45], position: { x: 18, y: 90 } },
   { id: 45, name: "鹿児島県", neighbors: [46], position: { x: 16, y: 92 } },
-  { id: 46, name: "沖縄県", neighbors: [47], position: { x: 32, y: 94 } },
-  { id: 47, name: "アメリカ", neighbors: [48], position: { x: 80, y: 34 } },
-  { id: 48, name: "イギリス", neighbors: [49], position: { x: 86, y: 48 } },
-  { id: 49, name: "月と太陽", neighbors: [50], position: { x: 82, y: 66 } },
-  { id: 50, name: "奈良県", neighbors: [], position: { x: 88, y: 82 } },
+  { id: 46, name: "沖縄県", neighbors: [47, 48], position: { x: 32, y: 94 } },
+  { id: 47, name: "アメリカ", neighbors: [49, 50], position: { x: 80, y: 34 } },
+  { id: 48, name: "イギリス", neighbors: [49, 51], position: { x: 86, y: 48 } },
+  { id: 49, name: "フランス", neighbors: [52], position: { x: 84, y: 56 } },
+  { id: 50, name: "ドイツ", neighbors: [52, 53], position: { x: 88, y: 62 } },
+  { id: 51, name: "中国", neighbors: [53], position: { x: 78, y: 44 } },
+  { id: 52, name: "オーストラリア", neighbors: [54], position: { x: 92, y: 74 } },
+  { id: 53, name: "インド", neighbors: [54, 55], position: { x: 82, y: 66 } },
+  { id: 54, name: "月", neighbors: [55], position: { x: 88, y: 76 } },
+  { id: 55, name: "太陽", neighbors: [56], position: { x: 90, y: 84 } },
+  { id: 56, name: "奈良県", neighbors: [], position: { x: 94, y: 90 } },
 ];
 
 const clueSchedule = [
@@ -64,6 +70,7 @@ const clueSchedule = [
   35, 35, 34, 34, 33, 32, 32, 31, 31, 30,
   29, 29, 28, 28, 27, 26, 26, 25, 25, 24,
   23, 23, 22, 21, 21, 20, 19, 18, 18, 17,
+  17, 16, 16, 15, 15, 14,
 ];
 
 function getDifficultyLabel(clues) {
@@ -150,6 +157,16 @@ const elements = {
   closeStageModalButton: document.getElementById("closeStageModal"),
   stageModalSubtitle: document.getElementById("stageModalSubtitle"),
   currentStageBadge: document.getElementById("currentStageBadge"),
+  celebrationOverlay: document.getElementById("celebrationOverlay"),
+  celebrationOverlayBackdrop: document.getElementById("celebrationOverlayBackdrop"),
+  celebrationContent: document.getElementById("celebrationContent"),
+  celebrationStage: document.getElementById("celebrationStage"),
+  celebrationTitle: document.getElementById("celebrationTitle"),
+  celebrationMessage: document.getElementById("celebrationMessage"),
+  celebrationTime: document.getElementById("celebrationTime"),
+  celebrationBest: document.getElementById("celebrationBest"),
+  celebrationMapButton: document.getElementById("celebrationMapButton"),
+  celebrationCloseButton: document.getElementById("celebrationCloseButton"),
 };
 
 const cellTemplate = document.getElementById("cellTemplate");
@@ -173,6 +190,8 @@ let focusModeEnabled = false;
 let lastFocusedElementBeforeModal = null;
 let lastFocusedElementBeforeStageModal = null;
 let stageModalOpen = false;
+let celebrationOverlayOpen = false;
+let lastFocusedBeforeCelebration = null;
 
 const stageNodeElements = new Map();
 const worldStageElements = new Map();
@@ -420,6 +439,101 @@ function formatStageLabel(stage) {
   return `ステージ${stage.id.toString().padStart(2, "0")}｜${stage.name}`;
 }
 
+function isCelebrationOverlayOpen() {
+  return celebrationOverlayOpen;
+}
+
+function getCelebrationFocusableElements() {
+  if (!elements.celebrationOverlay) return [];
+  return Array.from(
+    elements.celebrationOverlay.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((node) => !node.hasAttribute("disabled"));
+}
+
+function openCelebrationOverlay({ stage, elapsedSeconds, bestUpdated }) {
+  if (!elements.celebrationOverlay || !elements.celebrationContent) {
+    openStageModal({ celebrate: true });
+    return;
+  }
+  celebrationOverlayOpen = true;
+  lastFocusedBeforeCelebration =
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const stageLabel = formatStageLabel(stage);
+  if (elements.celebrationStage) {
+    elements.celebrationStage.textContent = stageLabel;
+  }
+  if (elements.celebrationMessage) {
+    const timeText = formatTime(elapsedSeconds);
+    elements.celebrationMessage.textContent = bestUpdated
+      ? `${stage?.name ?? "ステージ"}を ${timeText} でクリア！ベストを更新しました。`
+      : `${stage?.name ?? "ステージ"}を ${timeText} でクリアしました！`;
+  }
+  if (elements.celebrationTime) {
+    elements.celebrationTime.textContent = formatTime(elapsedSeconds);
+  }
+  if (elements.celebrationBest) {
+    const best = stage ? progress.bestTimes[stage.id] : null;
+    const bestText = best ? formatTime(best) : "--:--";
+    elements.celebrationBest.textContent = bestUpdated && best ? `NEW! ${bestText}` : bestText;
+    elements.celebrationBest.classList.toggle("celebration-overlay__value--new", bestUpdated && Boolean(best));
+  }
+  elements.celebrationOverlay.hidden = false;
+  elements.celebrationOverlay.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => {
+    const focusable = getCelebrationFocusableElements();
+    const target = focusable[0] || elements.celebrationContent;
+    target?.focus({ preventScroll: true });
+  });
+}
+
+function closeCelebrationOverlay({ openStageModalAfter = false } = {}) {
+  if (!celebrationOverlayOpen || !elements.celebrationOverlay) {
+    if (openStageModalAfter) {
+      openStageModal({ celebrate: true });
+    }
+    return;
+  }
+  celebrationOverlayOpen = false;
+  elements.celebrationOverlay.hidden = true;
+  elements.celebrationOverlay.setAttribute("aria-hidden", "true");
+  elements.celebrationBest?.classList.remove("celebration-overlay__value--new");
+  const previousFocus = lastFocusedBeforeCelebration;
+  lastFocusedBeforeCelebration = null;
+  if (openStageModalAfter) {
+    requestAnimationFrame(() => openStageModal({ celebrate: true }));
+    return;
+  }
+  if (previousFocus instanceof HTMLElement) {
+    previousFocus.focus({ preventScroll: true });
+  }
+}
+
+function handleCelebrationKeydown(event) {
+  if (!isCelebrationOverlayOpen()) return;
+  if (event.key === "Escape" || event.key === "Esc") {
+    closeCelebrationOverlay();
+    event.preventDefault();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = getCelebrationFocusableElements();
+  if (focusable.length === 0) {
+    event.preventDefault();
+    return;
+  }
+  const currentIndex = focusable.indexOf(document.activeElement);
+  let nextIndex = currentIndex;
+  if (event.shiftKey) {
+    nextIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;
+  } else {
+    nextIndex = currentIndex === focusable.length - 1 ? 0 : currentIndex + 1;
+  }
+  focusable[nextIndex].focus();
+  event.preventDefault();
+}
+
 function updateStageModalSubtitle({ celebrate = false } = {}) {
   if (!elements.stageModalSubtitle) return;
   const available = Array.from(getAvailableStageIds()).sort((a, b) => a - b);
@@ -512,6 +626,20 @@ function attachEventListeners() {
     }
   });
   elements.stageModal?.addEventListener("keydown", handleStageModalKeydown);
+
+  elements.celebrationMapButton?.addEventListener("click", () =>
+    closeCelebrationOverlay({ openStageModalAfter: true })
+  );
+  elements.celebrationCloseButton?.addEventListener("click", () => closeCelebrationOverlay());
+  elements.celebrationOverlay?.addEventListener("click", (event) => {
+    if (
+      event.target === elements.celebrationOverlay ||
+      event.target === elements.celebrationOverlayBackdrop
+    ) {
+      closeCelebrationOverlay();
+    }
+  });
+  elements.celebrationOverlay?.addEventListener("keydown", handleCelebrationKeydown);
 
   elements.stageSelect.addEventListener("change", (event) => {
     const stageNumber = Number(event.target.value);
@@ -725,6 +853,14 @@ function selectCell(index) {
 function handleKeydown(event) {
   if (document.activeElement && document.activeElement.tagName === "INPUT") return;
   const key = event.key;
+
+  if (isCelebrationOverlayOpen()) {
+    if (key === "Escape" || key === "Esc") {
+      closeCelebrationOverlay();
+      event.preventDefault();
+    }
+    return;
+  }
 
   if (isStageModalCurrentlyOpen()) {
     if (key === "Escape" || key === "Esc") {
@@ -1217,7 +1353,7 @@ function checkForCompletion() {
     }`,
     "success"
   );
-  openStageModal({ celebrate: true });
+  openCelebrationOverlay({ stage: stageInfo, elapsedSeconds: elapsed, bestUpdated });
 }
 
 function updateProgressUI() {

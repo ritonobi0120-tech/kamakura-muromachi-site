@@ -3,6 +3,9 @@ const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
 const STORAGE_KEY = "progress-v1";
 const MAX_HINTS = 3;
 const FOCUS_MODE_STORAGE_KEY = "focus-mode-enabled";
+const AUTO_CHECK_STORAGE_KEY = "preference-auto-check";
+const HIGHLIGHT_STORAGE_KEY = "preference-highlight";
+const NOTES_MODE_STORAGE_KEY = "preference-notes-mode";
 
 const baseStageDefinitions = [
   { id: 1, name: "北海道", neighbors: [2], position: { x: 58, y: 6 } },
@@ -193,6 +196,7 @@ function init() {
   populateStageSelect();
   focusModeEnabled = loadFocusModePreference();
   setFocusMode(focusModeEnabled, { announce: false });
+  applySavedTogglePreferences();
   const stageToLoad = ensureStageIsPlayable(progress.currentStage || 1);
   loadStageById(stageToLoad);
   attachEventListeners();
@@ -246,6 +250,37 @@ function saveFocusModePreference(value) {
     localStorage.setItem(FOCUS_MODE_STORAGE_KEY, value ? "true" : "false");
   } catch (error) {
     console.warn("Failed to persist focus mode preference", error);
+  }
+}
+
+function loadBooleanPreference(key, defaultValue) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return defaultValue;
+    return raw === "true";
+  } catch (error) {
+    console.warn(`Failed to load preference for ${key}`, error);
+    return defaultValue;
+  }
+}
+
+function saveBooleanPreference(key, value) {
+  try {
+    localStorage.setItem(key, value ? "true" : "false");
+  } catch (error) {
+    console.warn(`Failed to save preference for ${key}`, error);
+  }
+}
+
+function applySavedTogglePreferences() {
+  if (elements.notesToggle) {
+    elements.notesToggle.checked = loadBooleanPreference(NOTES_MODE_STORAGE_KEY, false);
+  }
+  if (elements.autoCheckToggle) {
+    elements.autoCheckToggle.checked = loadBooleanPreference(AUTO_CHECK_STORAGE_KEY, true);
+  }
+  if (elements.highlightToggle) {
+    elements.highlightToggle.checked = loadBooleanPreference(HIGHLIGHT_STORAGE_KEY, true);
   }
 }
 
@@ -316,6 +351,7 @@ function toggleFocusMode(force) {
 
 function toggleNotesMode({ announce = true } = {}) {
   elements.notesToggle.checked = !elements.notesToggle.checked;
+  saveBooleanPreference(NOTES_MODE_STORAGE_KEY, elements.notesToggle.checked);
   if (announce) {
     setStatus(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ", "info");
   }
@@ -527,6 +563,7 @@ function attachEventListeners() {
 
   elements.notesToggle.addEventListener("change", () => {
     setStatus(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ", "info");
+    saveBooleanPreference(NOTES_MODE_STORAGE_KEY, elements.notesToggle.checked);
   });
 
   elements.autoNotesSelected.addEventListener("click", () => autoFillNotes("selection"));
@@ -542,10 +579,12 @@ function attachEventListeners() {
       elements.autoCheckToggle.checked ? "自動ミスチェックをオン" : "自動ミスチェックをオフ",
       "info"
     );
+    saveBooleanPreference(AUTO_CHECK_STORAGE_KEY, elements.autoCheckToggle.checked);
   });
 
   elements.highlightToggle.addEventListener("change", () => {
     updateHighlights();
+    saveBooleanPreference(HIGHLIGHT_STORAGE_KEY, elements.highlightToggle.checked);
   });
 
   elements.hintButton.addEventListener("click", useHint);

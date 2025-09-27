@@ -2,7 +2,6 @@ const BOARD_SIZE = 9;
 const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
 const STORAGE_KEY = "progress-v1";
 const MAX_HINTS = 3;
-const FOCUS_MODE_STORAGE_KEY = "focus-mode-enabled";
 const NOTES_MODE_STORAGE_KEY = "preference-notes-mode";
 
 const baseStageDefinitions = [
@@ -111,8 +110,6 @@ const elements = {
   stageSelect: document.getElementById("stageSelect"),
   resetProgress: document.getElementById("resetProgress"),
   resetStage: document.getElementById("resetStage"),
-  focusModeToggle: document.getElementById("focusModeToggle"),
-  shortcutHelpButton: document.getElementById("shortcutHelpButton"),
   stageNumber: document.getElementById("stageNumber"),
   stageName: document.getElementById("stageName"),
   stageDifficulty: document.getElementById("stageDifficulty"),
@@ -129,9 +126,6 @@ const elements = {
   japanMap: document.getElementById("japanMap"),
   worldStageList: document.getElementById("worldStageList"),
   worldUnlockMessage: document.getElementById("worldUnlockMessage"),
-  shortcutModal: document.getElementById("shortcutModal"),
-  closeShortcutModal: document.getElementById("closeShortcutModal"),
-  shortcutModalOk: document.getElementById("shortcutModalOk"),
   openStageModalButton: document.getElementById("openStageModal"),
   stageModal: document.getElementById("stageModal"),
   stageModalContent: document.querySelector(".stage-modal__content"),
@@ -167,8 +161,6 @@ const history = [];
 let historyPointer = -1;
 let progress = loadProgress();
 let hintsUsed = 0;
-let focusModeEnabled = false;
-let lastFocusedElementBeforeModal = null;
 let lastFocusedElementBeforeStageModal = null;
 let stageModalOpen = false;
 let celebrationOverlayOpen = false;
@@ -185,8 +177,6 @@ function init() {
   buildBoard();
   buildStageMap();
   populateStageSelect();
-  focusModeEnabled = loadFocusModePreference();
-  setFocusMode(focusModeEnabled, { announce: false });
   applySavedTogglePreferences();
   const stageToLoad = ensureStageIsPlayable(progress.currentStage || 1);
   loadStageById(stageToLoad);
@@ -223,25 +213,6 @@ function loadProgress() {
 
 function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-}
-
-function loadFocusModePreference() {
-  try {
-    const raw = localStorage.getItem(FOCUS_MODE_STORAGE_KEY);
-    if (raw === null) return false;
-    return raw === "true";
-  } catch (error) {
-    console.warn("Failed to load focus mode preference", error);
-    return false;
-  }
-}
-
-function saveFocusModePreference(value) {
-  try {
-    localStorage.setItem(FOCUS_MODE_STORAGE_KEY, value ? "true" : "false");
-  } catch (error) {
-    console.warn("Failed to persist focus mode preference", error);
-  }
 }
 
 function loadBooleanPreference(key, defaultValue) {
@@ -313,94 +284,12 @@ function ensureStageIsPlayable(stageId) {
   return START_STAGE_ID;
 }
 
-function setFocusMode(enabled, { announce = true } = {}) {
-  focusModeEnabled = Boolean(enabled);
-  document.body.classList.toggle("focus-mode", focusModeEnabled);
-  if (elements.focusModeToggle) {
-    elements.focusModeToggle.setAttribute("aria-pressed", focusModeEnabled ? "true" : "false");
-    elements.focusModeToggle.textContent = focusModeEnabled ? "標準モード" : "集中モード";
-    elements.focusModeToggle.title = focusModeEnabled
-      ? "情報パネルを表示する"
-      : "情報パネルを隠して盤面に集中する";
-  }
-  saveFocusModePreference(focusModeEnabled);
-  if (announce) {
-    setStatus(focusModeEnabled ? "集中モードをオン" : "集中モードをオフ", "info");
-  }
-}
-
-function toggleFocusMode(force) {
-  const next = typeof force === "boolean" ? force : !focusModeEnabled;
-  setFocusMode(next);
-}
-
 function toggleNotesMode({ announce = true } = {}) {
   elements.notesToggle.checked = !elements.notesToggle.checked;
   saveBooleanPreference(NOTES_MODE_STORAGE_KEY, elements.notesToggle.checked);
   if (announce) {
     setStatus(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ", "info");
   }
-}
-
-function isShortcutModalOpen() {
-  return Boolean(elements.shortcutModal && !elements.shortcutModal.hidden);
-}
-
-function getShortcutModalFocusableElements() {
-  if (!elements.shortcutModal) return [];
-  return Array.from(
-    elements.shortcutModal.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-  ).filter((node) => !node.hasAttribute("disabled"));
-}
-
-function openShortcutModal() {
-  if (!elements.shortcutModal) return;
-  if (!elements.shortcutModal.hidden) return;
-  lastFocusedElementBeforeModal = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  elements.shortcutModal.hidden = false;
-  elements.shortcutModal.setAttribute("aria-hidden", "false");
-  const focusable = getShortcutModalFocusableElements();
-  const target = focusable[0] || elements.shortcutModal;
-  target.focus({ preventScroll: true });
-}
-
-function closeShortcutModal({ restoreFocus = true } = {}) {
-  if (!elements.shortcutModal) return;
-  if (elements.shortcutModal.hidden) return;
-  elements.shortcutModal.hidden = true;
-  elements.shortcutModal.setAttribute("aria-hidden", "true");
-  if (restoreFocus && lastFocusedElementBeforeModal instanceof HTMLElement) {
-    lastFocusedElementBeforeModal.focus({ preventScroll: true });
-  }
-}
-
-function toggleShortcutModal(force) {
-  const shouldOpen = typeof force === "boolean" ? force : elements.shortcutModal?.hidden;
-  if (shouldOpen) {
-    openShortcutModal();
-  } else {
-    closeShortcutModal();
-  }
-}
-
-function handleShortcutModalKeydown(event) {
-  if (event.key !== "Tab") return;
-  const focusable = getShortcutModalFocusableElements();
-  if (focusable.length === 0) {
-    event.preventDefault();
-    return;
-  }
-  const currentIndex = focusable.indexOf(document.activeElement);
-  let nextIndex = currentIndex;
-  if (event.shiftKey) {
-    nextIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;
-  } else {
-    nextIndex = currentIndex === focusable.length - 1 ? 0 : currentIndex + 1;
-  }
-  focusable[nextIndex].focus();
-  event.preventDefault();
 }
 
 function isStageModalCurrentlyOpen() {
@@ -691,17 +580,6 @@ function attachEventListeners() {
   elements.hintButton.addEventListener("click", useHint);
   elements.checkSolutionButton?.addEventListener("click", attemptSubmitSolution);
 
-  elements.focusModeToggle?.addEventListener("click", () => toggleFocusMode());
-  elements.shortcutHelpButton?.addEventListener("click", () => openShortcutModal());
-  elements.closeShortcutModal?.addEventListener("click", () => closeShortcutModal());
-  elements.shortcutModalOk?.addEventListener("click", () => closeShortcutModal());
-  elements.shortcutModal?.addEventListener("click", (event) => {
-    if (event.target === elements.shortcutModal) {
-      closeShortcutModal();
-    }
-  });
-  elements.shortcutModal?.addEventListener("keydown", handleShortcutModalKeydown);
-
   document.addEventListener("keydown", handleKeydown);
 }
 
@@ -779,16 +657,20 @@ function updateStageMap() {
   const cleared = new Set(progress.clearedStages);
   const currentId = stageConfigs[currentStageIndex]?.id;
   stageNodeElements.forEach((node, stageId) => {
+    const isLocked = !unlocked.has(stageId);
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
-    node.classList.toggle("locked", !unlocked.has(stageId));
+    node.classList.toggle("locked", isLocked);
+    node.toggleAttribute("aria-disabled", isLocked);
   });
   worldStageElements.forEach((node, stageId) => {
+    const isLocked = !unlocked.has(stageId);
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
-    node.classList.toggle("locked", !unlocked.has(stageId));
+    node.classList.toggle("locked", isLocked);
+    node.toggleAttribute("aria-disabled", isLocked);
   });
   const japanCleared = stageConfigs
     .filter((stage) => stage.id <= PREFECTURE_STAGE_LIMIT)
@@ -823,7 +705,6 @@ function selectCell(index) {
   selectedIndex = index;
   cells[selectedIndex].classList.add("selected");
   updateRelatedHighlights();
-  updateHighlights();
 }
 
 function handleKeydown(event) {
@@ -843,20 +724,6 @@ function handleKeydown(event) {
       closeStageModal();
       event.preventDefault();
     }
-    return;
-  }
-
-  if (isShortcutModalOpen()) {
-    if (key === "Escape" || key === "Esc" || key === "?" || (key === "/" && event.shiftKey)) {
-      closeShortcutModal();
-      event.preventDefault();
-    }
-    return;
-  }
-
-  if ((key === "?" || (key === "/" && event.shiftKey)) && !event.ctrlKey && !event.metaKey) {
-    toggleShortcutModal(true);
-    event.preventDefault();
     return;
   }
 
@@ -912,9 +779,6 @@ function handleKeydown(event) {
   } else if (key.toLowerCase() === "n") {
     toggleNotesMode();
     event.preventDefault();
-  } else if (key.toLowerCase() === "f" && !ctrlOrMeta && !event.altKey) {
-    toggleFocusMode();
-    event.preventDefault();
   } else if (key === "Enter") {
     attemptSubmitSolution();
     event.preventDefault();
@@ -965,9 +829,9 @@ function setCellValue(index, value, { silent = false } = {}) {
   const previousNotes = Array.from(notes[index]);
   if (previousValue === value) return;
   values[index] = value;
-  notes[index].clear();
   updateCellDisplay(index);
   const peerNoteChanges = value !== 0 ? clearNotesWithValue(index, value) : [];
+  const newNotes = Array.from(notes[index]);
   if (!silent) {
     pushHistory({
       type: "value",
@@ -975,12 +839,11 @@ function setCellValue(index, value, { silent = false } = {}) {
       previousValue,
       newValue: value,
       previousNotes,
-      newNotes: [],
+      newNotes,
       peerNoteChanges,
     });
   }
   updateValidation();
-  updateHighlights();
 }
 
 function revealSolution() {
@@ -1001,7 +864,6 @@ function revealSolution() {
     updateHistoryButtons();
   }
   updateValidation();
-  updateHighlights();
   checkForCompletion();
 }
 
@@ -1157,7 +1019,6 @@ function applyHistory(direction) {
   }
   updateHistoryButtons();
   updateValidation();
-  updateHighlights();
 }
 
 function applyHistoryEntry(entry, undo) {
@@ -1198,15 +1059,14 @@ function updateCellDisplay(index) {
   const value = values[index];
   valueSpan.textContent = value === 0 ? "" : value;
   notesContainer.innerHTML = "";
-  if (value === 0) {
-    [...notes[index]]
-      .sort((a, b) => a - b)
-      .forEach((note) => {
-        const span = document.createElement("span");
-        span.textContent = note;
-        notesContainer.appendChild(span);
-      });
-  }
+  const noteValues = [...notes[index]].sort((a, b) => a - b);
+  noteValues.forEach((note) => {
+    const span = document.createElement("span");
+    span.textContent = note;
+    notesContainer.appendChild(span);
+  });
+  cell.classList.toggle("has-value", value !== 0);
+  cell.classList.toggle("has-notes", noteValues.length > 0);
 }
 
 function clearValidationState() {
@@ -1252,39 +1112,32 @@ function updateRelatedHighlights() {
   }
 }
 
-function updateHighlights() {
-  cells.forEach((cell) => cell.classList.remove("same-value"));
-  if (selectedIndex === null) return;
-  const value = values[selectedIndex];
-  if (value === 0) return;
-  values.forEach((val, idx) => {
-    if (val === value) {
-      cells[idx].classList.add("same-value");
-    }
-  });
-}
-
 function useHint() {
   if (hintsUsed >= MAX_HINTS) {
     setStatus("ヒントはこれ以上使えません。", "warning");
     return;
   }
-  const candidates = [];
-  for (let index = 0; index < TOTAL_CELLS; index++) {
-    if (values[index] === solution[index]) continue;
-    candidates.push(index);
-  }
-  if (candidates.length === 0) {
-    setStatus("ヒントはありません。すでに完成しています！", "success");
+  if (selectedIndex === null) {
+    setStatus("ヒントを使うマスを選択してください。", "warning");
     return;
   }
-  candidates.sort((a, b) => countCandidates(a) - countCandidates(b));
-  const targetIndex = candidates[0];
-  setCellValue(targetIndex, solution[targetIndex]);
+  const index = selectedIndex;
+  const cell = cells[index];
+  if (cell.classList.contains("locked")) {
+    setStatus("このマスにはヒントを使えません。", "warning");
+    return;
+  }
+  if (values[index] !== 0 && values[index] === solution[index]) {
+    setStatus("すでに正しい数字が入っています。", "info");
+    return;
+  }
+  setCellValue(index, solution[index], { silent: true });
+  cell.classList.add("locked", "hint-filled");
   hintsUsed += 1;
   updateHintUI();
   const remaining = MAX_HINTS - hintsUsed;
-  setStatus(`ヒントを使用しました。残り${remaining}回です。`, remaining === 0 ? "warning" : "info");
+  setStatus(`ヒントを使いました。このマスは固定されました。（残り${remaining}回）`, remaining === 0 ? "warning" : "info");
+  updateCellDisplay(index);
 }
 
 function attemptSubmitSolution() {
@@ -1406,7 +1259,7 @@ function loadStage(stageIndex, restart = false) {
   clearValidationState();
   for (let index = 0; index < TOTAL_CELLS; index++) {
     const cell = cells[index];
-    cell.classList.remove("locked", "selected", "related", "same-value", "error");
+    cell.classList.remove("locked", "selected", "related", "error", "hint-filled");
     notes[index].clear();
     if (puzzle[index] !== 0) {
       values[index] = puzzle[index];
@@ -1415,7 +1268,6 @@ function loadStage(stageIndex, restart = false) {
     updateCellDisplay(index);
   }
   updateRelatedHighlights();
-  updateHighlights();
   updateValidation();
   resetTimer();
   startTimer();

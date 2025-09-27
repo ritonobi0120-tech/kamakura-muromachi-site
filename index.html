@@ -81,8 +81,6 @@
               <p id="progressLabel">0 / 50 ステージクリア</p>
             </div>
             <div class="stage-overview__footer">
-              <button id="focusModeToggle" class="secondary" type="button" aria-pressed="false">集中モード</button>
-              <button id="shortcutHelpButton" class="secondary" type="button" aria-haspopup="dialog">キーボードガイド</button>
               <button id="resetProgress" class="ghost" type="button">進行状況をリセット</button>
             </div>
           </section>
@@ -218,73 +216,6 @@
         <div class="notes"></div>
       </button>
     </template>
-
-    <div
-      class="shortcut-modal"
-      id="shortcutModal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="shortcutModalTitle"
-      aria-hidden="true"
-      hidden
-    >
-      <div class="shortcut-modal__content" tabindex="-1">
-        <div class="shortcut-modal__header">
-          <h2 id="shortcutModalTitle">Chromebook プレイガイド</h2>
-          <button type="button" id="closeShortcutModal" aria-label="閉じる">×</button>
-        </div>
-        <p class="shortcut-modal__intro">
-          Chromebook で快適に遊べるよう、主なキーボード操作や便利機能をまとめました。
-        </p>
-        <dl class="shortcut-list">
-          <div>
-            <dt>矢印キー / WASD</dt>
-            <dd>カーソル移動</dd>
-          </div>
-          <div>
-            <dt>数字キー 1〜9</dt>
-            <dd>数字入力（Shift / Alt / Search でメモ入力）</dd>
-          </div>
-          <div>
-            <dt>0 / Backspace / Delete</dt>
-            <dd>入力を消す</dd>
-          </div>
-          <div>
-            <dt>スペース</dt>
-            <dd>メモモードの切り替え</dd>
-          </div>
-          <div>
-            <dt>Ctrl + Z / ⌘ + Z</dt>
-            <dd>元に戻す</dd>
-          </div>
-          <div>
-            <dt>Ctrl + Y / Ctrl + Shift + Z</dt>
-            <dd>やり直す</dd>
-          </div>
-          <div>
-            <dt>H / Ctrl + H</dt>
-            <dd>ヒントを使う（残り 3 回まで）</dd>
-          </div>
-          <div>
-            <dt>N</dt>
-            <dd>メモモードをオン／オフ</dd>
-          </div>
-          <div>
-            <dt>F</dt>
-            <dd>集中モードの切り替え</dd>
-          </div>
-          <div>
-            <dt>Shift + / (?)</dt>
-            <dd>このガイドを開く／閉じる</dd>
-          </div>
-        </dl>
-        <p class="shortcut-modal__tip">
-          Chromebook のウィンドウを分割しても盤面が自動調整されるよう最適化されています。<br />
-          いつでも集中モードに切り替えて盤面を最大化でき、初回読込後はオフラインでも遊べます。
-        </p>
-        <button class="shortcut-modal__close" id="shortcutModalOk">閉じる</button>
-      </div>
-    </div>
 
     <script src="script.js" type="module"></script>
   </body>

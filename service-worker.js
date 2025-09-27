@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sudoku-chromebook-v5';
+const CACHE_NAME = 'sudoku-chromebook-v6';
 const OFFLINE_ASSETS = [
   './',
   './index.html',

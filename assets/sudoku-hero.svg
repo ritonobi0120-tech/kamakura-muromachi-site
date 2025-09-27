@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">ナンプレ冒険のイラスト</title>
+  <desc id="hero-desc">光るナンプレ盤面と旗を持つキャラクターのシルエット</desc>
+  <defs>
+    <linearGradient id="hero-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e3f0ff" />
+      <stop offset="1" stop-color="#cbe6ff" />
+    </linearGradient>
+    <linearGradient id="hero-board" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="1" stop-color="#d7e8ff" />
+    </linearGradient>
+    <linearGradient id="hero-flag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8a65" />
+      <stop offset="1" stop-color="#ffb74d" />
+    </linearGradient>
+    <filter id="hero-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#487bb7" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <rect width="320" height="180" rx="20" fill="url(#hero-bg)" />
+  <g filter="url(#hero-shadow)">
+    <rect x="72" y="40" width="176" height="120" rx="14" fill="url(#hero-board)" />
+    <g stroke="#8aa9d8" stroke-width="2">
+      <path d="M72 80h176" />
+      <path d="M72 120h176" />
+      <path d="M130 40v120" />
+      <path d="M188 40v120" />
+      <path d="M72 60h176" opacity="0.4" />
+      <path d="M72 100h176" opacity="0.4" />
+      <path d="M72 140h176" opacity="0.4" />
+      <path d="M102 40v120" opacity="0.4" />
+      <path d="M160 40v120" opacity="0.4" />
+      <path d="M218 40v120" opacity="0.4" />
+    </g>
+    <g fill="#2f4770" opacity="0.7">
+      <circle cx="112" cy="70" r="10" />
+      <rect x="174" y="108" width="24" height="24" rx="5" />
+      <rect x="214" y="68" width="24" height="40" rx="5" />
+      <rect x="130" y="128" width="20" height="12" rx="4" />
+    </g>
+    <g fill="#ffffff" opacity="0.6">
+      <path d="M116 72h-8l4-6z" />
+      <path d="M186 120v-8l6 4z" />
+      <path d="M228 72h-12l6-10z" />
+    </g>
+  </g>
+  <g transform="translate(40 30)">
+    <path d="M38 116c-10-14-6-34 8-44 12-8 28-6 38 4 10 10 12 28 4 40l-6-6c6-10 4-22-4-30-8-8-20-10-28-2-10 8-12 20-4 30z" fill="#2f4770" opacity="0.2" />
+    <path d="M84 36l30-18 2 48-30-8z" fill="url(#hero-flag)" />
+    <path d="M84 36l-2 54" stroke="#2f4770" stroke-width="6" stroke-linecap="round" />
+    <circle cx="32" cy="92" r="22" fill="#3e567c" />
+    <path d="M28 64h12l10 50H18z" fill="#3e567c" />
+    <path d="M18 114l14-8 14 8-8 28h-12z" fill="#2f4770" />
+    <path d="M12 146l16-14 16 14-4 8H16z" fill="#3e567c" />
+    <circle cx="34" cy="66" r="12" fill="#2f4770" />
+    <circle cx="28" cy="64" r="4" fill="#ffffff" opacity="0.6" />
+  </g>
+</svg>

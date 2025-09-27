@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>段階式ナンプレ 50 ステージ</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <h1>段階式ナンプレ</h1>
+        <p>初級〜中級を少しずつ攻略。全50ステージ。</p>
+      </div>
+      <div class="header-controls">
+        <div class="stage-select-label">
+          <label for="stageSelect">ステージ</label>
+          <select id="stageSelect" aria-label="ステージ選択"></select>
+        </div>
+        <button id="resetProgress" class="secondary">進行状況をリセット</button>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="board-section" aria-label="ナンプレ盤面">
+        <div id="sudokuBoard" class="sudoku-board" role="grid" aria-label="ナンプレ盤面"></div>
+        <div class="number-pad" aria-label="数字パッド">
+          <button data-value="1">1</button>
+          <button data-value="2">2</button>
+          <button data-value="3">3</button>
+          <button data-value="4">4</button>
+          <button data-value="5">5</button>
+          <button data-value="6">6</button>
+          <button data-value="7">7</button>
+          <button data-value="8">8</button>
+          <button data-value="9">9</button>
+          <button data-value="0" class="secondary">消去</button>
+        </div>
+      </section>
+
+      <aside class="info-panel" aria-label="補助機能">
+        <section class="panel-card">
+          <h2>ステージ情報</h2>
+          <ul>
+            <li><span>番号:</span> <strong id="stageNumber">01</strong></li>
+            <li><span>地域:</span> <strong id="stageName">北海道</strong></li>
+            <li><span>難易度:</span> <strong id="stageDifficulty">初級</strong></li>
+            <li>
+              <span>クリアタイム:</span>
+              <strong id="currentTime">00:00</strong>
+            </li>
+            <li>
+              <span>ベスト:</span>
+              <strong id="bestTime">--</strong>
+            </li>
+          </ul>
+          <div class="progress">
+            <div class="progress-bar"><span id="progressFill"></span></div>
+            <p id="progressLabel">0 / 50 ステージクリア</p>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <h2>操作</h2>
+          <div class="toggles">
+            <label>
+              <input type="checkbox" id="notesToggle" />
+              <span>メモモード</span>
+            </label>
+            <label>
+              <input type="checkbox" id="autoCheckToggle" checked />
+              <span>自動ミスチェック</span>
+            </label>
+            <label>
+              <input type="checkbox" id="highlightToggle" checked />
+              <span>同じ数字をハイライト</span>
+            </label>
+          </div>
+          <div class="note-tools">
+            <button id="autoNotesSelected" class="secondary">選択マス候補</button>
+            <button id="autoNotesAll" class="secondary">全マス候補</button>
+            <button id="clearNotesButton" class="secondary">候補クリア</button>
+          </div>
+          <div class="buttons">
+            <button id="hintButton">ヒント</button>
+            <button id="checkButton">答え合わせ</button>
+            <button id="undoButton" class="secondary">元に戻す</button>
+            <button id="redoButton" class="secondary">やり直す</button>
+            <button id="restartButton" class="secondary">ステージやり直し</button>
+          </div>
+          <p class="hint-status" id="hintStatus">ヒント残り: 3</p>
+          <p class="status-message" id="statusMessage" aria-live="polite"></p>
+        </section>
+
+        <section class="panel-card stage-map-card">
+          <h2>ワールドマップ</h2>
+          <div class="stage-map" aria-label="ステージマップ">
+            <div class="japan-map-header">
+              <h3>日本列島</h3>
+              <p>47都道府県を渡り歩いて全国制覇を目指そう。</p>
+            </div>
+            <div
+              class="japan-map-grid"
+              id="japanMap"
+              role="grid"
+              aria-label="日本の都道府県マップ"
+            ></div>
+            <p id="worldUnlockMessage" class="world-unlock-message">
+              日本全県を制覇すると海外航路が開かれます。
+            </p>
+            <div
+              class="world-stage-list"
+              id="worldStageList"
+              role="list"
+              aria-label="海外と宇宙のステージ"
+            ></div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <template id="cellTemplate">
+      <button class="cell" role="gridcell" aria-live="polite">
+        <span class="value"></span>
+        <div class="notes"></div>
+      </button>
+    </template>
+
+    <script src="script.js" type="module"></script>
+  </body>
+</html>

@@ -13,125 +13,126 @@
     />
   </head>
   <body>
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-text">
-          <h1>段階式ナンプレ</h1>
-          <p>初級〜中級を少しずつ攻略。全50ステージ。</p>
-          <p class="current-stage-pill" id="currentStagePill">ステージ01｜北海道</p>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="brand">
+          <div class="brand-text">
+            <h1>段階式ナンプレ</h1>
+            <p>初級〜中級を少しずつ攻略。全50ステージ。</p>
+            <p class="current-stage-pill" id="currentStagePill">ステージ01｜北海道</p>
+          </div>
+          <figure class="brand-hero">
+            <img
+              src="assets/sudoku-hero.svg"
+              alt="旗を掲げてナンプレ冒険へ旅立つイラスト"
+              loading="lazy"
+            />
+          </figure>
         </div>
-        <figure class="brand-hero">
-          <img
-            src="assets/sudoku-hero.svg"
-            alt="旗を掲げてナンプレ冒険へ旅立つイラスト"
-            loading="lazy"
-          />
-        </figure>
-      </div>
-      <div class="header-controls">
-        <button id="openStageModal" class="primary">マップを開く</button>
-        <div class="header-buttons">
-          <button id="focusModeToggle" class="secondary" aria-pressed="false">集中モード</button>
-          <button id="shortcutHelpButton" class="secondary" aria-haspopup="dialog">キーボードガイド</button>
-          <button id="resetProgress" class="secondary">進行状況をリセット</button>
+        <div class="header-controls">
+          <button id="openStageModal" class="primary">マップを開く</button>
+          <div class="header-buttons">
+            <button id="focusModeToggle" class="secondary" aria-pressed="false">集中モード</button>
+            <button id="shortcutHelpButton" class="secondary" aria-haspopup="dialog">キーボードガイド</button>
+            <button id="resetProgress" class="secondary">進行状況をリセット</button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <main class="app-layout">
-      <section class="board-section" aria-label="ナンプレ盤面">
-        <div id="sudokuBoard" class="sudoku-board" role="grid" aria-label="ナンプレ盤面"></div>
-        <div class="number-pad" aria-label="数字パッド">
-          <button data-value="1">1</button>
-          <button data-value="2">2</button>
-          <button data-value="3">3</button>
-          <button data-value="4">4</button>
-          <button data-value="5">5</button>
-          <button data-value="6">6</button>
-          <button data-value="7">7</button>
-          <button data-value="8">8</button>
-          <button data-value="9">9</button>
-          <button data-value="0" class="secondary">消去</button>
-        </div>
-      </section>
-
-      <aside class="info-panel" aria-label="補助機能">
-        <section class="panel-card">
-          <h2>ステージ情報</h2>
-          <ul class="stage-meta">
-            <li class="stage-meta__item">
-              <img src="assets/icon-map-pin.svg" alt="" class="stage-meta__icon" />
-              <div class="stage-meta__body">
-                <p class="stage-meta__label">冒険先</p>
-                <p class="stage-meta__value">
-                  <strong id="stageName">北海道</strong>
-                  <span class="stage-meta__sub">ステージ <span id="stageNumber">01</span></span>
-                </p>
-              </div>
-            </li>
-            <li class="stage-meta__item">
-              <img src="assets/icon-star.svg" alt="" class="stage-meta__icon" />
-              <div class="stage-meta__body">
-                <p class="stage-meta__label">難易度</p>
-                <p class="stage-meta__value">
-                  <strong id="stageDifficulty">初級</strong>
-                </p>
-              </div>
-            </li>
-            <li class="stage-meta__item stage-meta__item--time">
-              <img src="assets/icon-clock.svg" alt="" class="stage-meta__icon" />
-              <div class="stage-meta__body stage-time">
-                <p>
-                  <span>タイム</span>
-                  <strong id="currentTime">00:00</strong>
-                </p>
-                <p>
-                  <span>ベスト</span>
-                  <strong id="bestTime">--</strong>
-                </p>
-              </div>
-            </li>
-          </ul>
-          <div class="progress">
-            <div class="progress-bar"><span id="progressFill"></span></div>
-            <p id="progressLabel">0 / 50 ステージクリア</p>
+      <main class="app-layout">
+        <section class="board-section" aria-label="ナンプレ盤面">
+          <div id="sudokuBoard" class="sudoku-board" role="grid" aria-label="ナンプレ盤面"></div>
+          <div class="number-pad" aria-label="数字パッド">
+            <button data-value="1">1</button>
+            <button data-value="2">2</button>
+            <button data-value="3">3</button>
+            <button data-value="4">4</button>
+            <button data-value="5">5</button>
+            <button data-value="6">6</button>
+            <button data-value="7">7</button>
+            <button data-value="8">8</button>
+            <button data-value="9">9</button>
+            <button data-value="0" class="secondary">消去</button>
           </div>
         </section>
 
-        <section class="panel-card">
-          <h2>操作</h2>
-          <div class="toggles">
-            <label>
-              <input type="checkbox" id="notesToggle" />
-              <span>メモモード</span>
-            </label>
-            <label>
-              <input type="checkbox" id="autoCheckToggle" checked />
-              <span>自動ミスチェック</span>
-            </label>
-            <label>
-              <input type="checkbox" id="highlightToggle" checked />
-              <span>同じ数字をハイライト</span>
-            </label>
-          </div>
-          <div class="note-tools">
-            <button id="autoNotesSelected" class="secondary">選択マス候補</button>
-            <button id="autoNotesAll" class="secondary">全マス候補</button>
-            <button id="clearNotesButton" class="secondary">候補クリア</button>
-          </div>
-          <div class="buttons">
-            <button id="hintButton">ヒント</button>
-            <button id="checkButton">答え合わせ</button>
-            <button id="undoButton" class="secondary">元に戻す</button>
-            <button id="redoButton" class="secondary">やり直す</button>
-            <button id="restartButton" class="secondary">ステージやり直し</button>
-          </div>
-          <p class="hint-status" id="hintStatus">ヒント残り: 3</p>
-          <p class="status-message" id="statusMessage" aria-live="polite"></p>
-        </section>
+        <aside class="info-panel" aria-label="補助機能">
+          <section class="panel-card">
+            <h2>ステージ情報</h2>
+            <ul class="stage-meta">
+              <li class="stage-meta__item">
+                <img src="assets/icon-map-pin.svg" alt="" class="stage-meta__icon" />
+                <div class="stage-meta__body">
+                  <p class="stage-meta__label">冒険先</p>
+                  <p class="stage-meta__value">
+                    <strong id="stageName">北海道</strong>
+                    <span class="stage-meta__sub">ステージ <span id="stageNumber">01</span></span>
+                  </p>
+                </div>
+              </li>
+              <li class="stage-meta__item">
+                <img src="assets/icon-star.svg" alt="" class="stage-meta__icon" />
+                <div class="stage-meta__body">
+                  <p class="stage-meta__label">難易度</p>
+                  <p class="stage-meta__value">
+                    <strong id="stageDifficulty">初級</strong>
+                  </p>
+                </div>
+              </li>
+              <li class="stage-meta__item stage-meta__item--time">
+                <img src="assets/icon-clock.svg" alt="" class="stage-meta__icon" />
+                <div class="stage-meta__body stage-time">
+                  <p>
+                    <span>タイム</span>
+                    <strong id="currentTime">00:00</strong>
+                  </p>
+                  <p>
+                    <span>ベスト</span>
+                    <strong id="bestTime">--</strong>
+                  </p>
+                </div>
+              </li>
+            </ul>
+            <div class="progress">
+              <div class="progress-bar"><span id="progressFill"></span></div>
+              <p id="progressLabel">0 / 50 ステージクリア</p>
+            </div>
+          </section>
 
-      </aside>
-    </main>
+          <section class="panel-card">
+            <h2>操作</h2>
+            <div class="toggles">
+              <label>
+                <input type="checkbox" id="notesToggle" />
+                <span>メモモード</span>
+              </label>
+              <label>
+                <input type="checkbox" id="autoCheckToggle" checked />
+                <span>自動ミスチェック</span>
+              </label>
+              <label>
+                <input type="checkbox" id="highlightToggle" checked />
+                <span>同じ数字をハイライト</span>
+              </label>
+            </div>
+            <div class="note-tools">
+              <button id="autoNotesSelected" class="secondary">選択マス候補</button>
+              <button id="autoNotesAll" class="secondary">全マス候補</button>
+              <button id="clearNotesButton" class="secondary">候補クリア</button>
+            </div>
+            <div class="buttons">
+              <button id="hintButton">ヒント</button>
+              <button id="checkButton">答え合わせ</button>
+              <button id="undoButton" class="secondary">元に戻す</button>
+              <button id="redoButton" class="secondary">やり直す</button>
+              <button id="restartButton" class="secondary">ステージやり直し</button>
+            </div>
+            <p class="hint-status" id="hintStatus">ヒント残り: 3</p>
+            <p class="status-message" id="statusMessage" aria-live="polite"></p>
+          </section>
+        </aside>
+      </main>
+    </div>
 
     <div
       class="stage-modal"

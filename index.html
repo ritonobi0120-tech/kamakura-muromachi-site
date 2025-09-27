@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>段階式ナンプレ 50 ステージ</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <h1>段階式ナンプレ</h1>
+        <p>初級〜中級を少しずつ攻略。全50ステージ。</p>
+      </div>
+      <div class="header-controls">
+        <label class="stage-select-label"
+          >ステージ
+          <select id="stageSelect" aria-label="ステージ選択"></select>
+        </label>
+        <button id="resetProgress" class="secondary">進行状況をリセット</button>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="board-section" aria-label="ナンプレ盤面">
+        <div id="sudokuBoard" class="sudoku-board" role="grid" aria-label="ナンプレ盤面"></div>
+        <div class="number-pad" aria-label="数字パッド">
+          <button data-value="1">1</button>
+          <button data-value="2">2</button>
+          <button data-value="3">3</button>
+          <button data-value="4">4</button>
+          <button data-value="5">5</button>
+          <button data-value="6">6</button>
+          <button data-value="7">7</button>
+          <button data-value="8">8</button>
+          <button data-value="9">9</button>
+          <button data-value="0" class="secondary">消去</button>
+        </div>
+      </section>
+
+      <aside class="info-panel" aria-label="補助機能">
+        <section class="panel-card">
+          <h2>ステージ情報</h2>
+          <ul>
+            <li><span>番号:</span> <strong id="stageNumber">1</strong></li>
+            <li><span>難易度:</span> <strong id="stageDifficulty">初級</strong></li>
+            <li>
+              <span>クリアタイム:</span>
+              <strong id="currentTime">00:00</strong>
+            </li>
+            <li>
+              <span>ベスト:</span>
+              <strong id="bestTime">--</strong>
+            </li>
+          </ul>
+          <div class="progress">
+            <div class="progress-bar"><span id="progressFill"></span></div>
+            <p id="progressLabel">0 / 50 ステージクリア</p>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <h2>操作</h2>
+          <div class="toggles">
+            <label>
+              <input type="checkbox" id="notesToggle" />
+              <span>メモモード</span>
+            </label>
+            <label>
+              <input type="checkbox" id="autoCheckToggle" checked />
+              <span>自動ミスチェック</span>
+            </label>
+            <label>
+              <input type="checkbox" id="highlightToggle" checked />
+              <span>同じ数字をハイライト</span>
+            </label>
+          </div>
+          <div class="buttons">
+            <button id="hintButton">ヒント</button>
+            <button id="checkButton">答え合わせ</button>
+            <button id="undoButton" class="secondary">元に戻す</button>
+            <button id="redoButton" class="secondary">やり直す</button>
+            <button id="restartButton" class="secondary">ステージやり直し</button>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <h2>プレイログ</h2>
+          <div id="log" class="log" aria-live="polite"></div>
+        </section>
+      </aside>
+    </main>
+
+    <template id="cellTemplate">
+      <button class="cell" role="gridcell" aria-live="polite">
+        <span class="value"></span>
+        <div class="notes"></div>
+      </button>
+    </template>
+
+    <script src="script.js" type="module"></script>
+  </body>
+</html>

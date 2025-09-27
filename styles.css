@@ -77,116 +77,6 @@ body.stage-modal-open {
   pointer-events: none;
 }
 
-.app-header {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(245, 249, 255, 0.82));
-  padding: clamp(1.3rem, 1.2vw + 1rem, 1.75rem) clamp(1.75rem, 1.5vw + 1.25rem, 2.4rem);
-  border: 1px solid var(--border-strong);
-  border-radius: 1.8rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.2rem;
-  box-shadow: var(--shadow-soft);
-  position: relative;
-  overflow: hidden;
-}
-
-.app-header::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 120% at 90% 0%, rgba(31, 111, 235, 0.08), transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: clamp(1rem, 1vw + 0.8rem, 1.6rem);
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.brand-text h1 {
-  margin: 0;
-  font-size: clamp(1.5rem, 0.6rem + 2.4vw, 2.2rem);
-}
-
-.brand-text p {
-  margin: 0.25rem 0 0;
-  color: var(--fg-soft);
-}
-
-.brand-hero {
-  margin: 0;
-  flex: 0 0 auto;
-  width: clamp(160px, 18vw, 220px);
-  border-radius: 1.2rem;
-  overflow: hidden;
-  box-shadow: 0 18px 36px rgba(32, 69, 138, 0.18);
-}
-
-.brand-hero img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.current-stage-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.75rem;
-  padding: 0.35rem 0.9rem;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(31, 111, 235, 0.2), rgba(31, 111, 235, 0.08));
-  color: var(--accent-strong);
-  font-weight: 600;
-  font-size: 0.95rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
-  padding: 0.75rem 1rem;
-  border-radius: 1.2rem;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-}
-
-.header-buttons {
-  display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.header-buttons button {
-  min-width: 8rem;
-}
-
-.stage-select-label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  font-weight: 600;
-}
-
 select,
 button {
   font: inherit;
@@ -225,6 +115,12 @@ button.secondary:hover {
   box-shadow: 0 14px 24px rgba(31, 111, 235, 0.22);
 }
 
+button.secondary[aria-pressed="true"],
+button.secondary[aria-pressed="true"]:hover {
+  background: linear-gradient(180deg, rgba(31, 111, 235, 0.2), rgba(31, 111, 235, 0.1));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 12px 20px rgba(31, 69, 160, 0.12);
+}
+
 button.primary {
   background: linear-gradient(180deg, var(--accent) 0%, var(--accent-strong) 90%);
   border-color: var(--accent);
@@ -234,6 +130,19 @@ button.primary {
 
 button.primary:hover {
   box-shadow: 0 18px 28px rgba(31, 111, 235, 0.38);
+}
+
+button.ghost {
+  background: transparent;
+  border-style: dashed;
+  border-color: rgba(31, 69, 160, 0.28);
+  color: var(--fg-soft);
+  box-shadow: none;
+}
+
+button.ghost:hover {
+  border-color: rgba(31, 69, 160, 0.5);
+  color: var(--accent-strong);
 }
 
 .app-layout {
@@ -251,7 +160,7 @@ button.primary:hover {
 .board-section {
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(236, 243, 255, 0.92));
   border-radius: 1.6rem;
-  padding: clamp(1.5rem, 2.6vw, 3rem);
+  padding: clamp(1.8rem, 3vw, 3.4rem);
   box-shadow: var(--shadow-strong);
   border: 1px solid var(--border-strong);
   display: flex;
@@ -307,6 +216,7 @@ button.primary:hover {
   color: var(--fg);
   padding: 0;
   transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  touch-action: manipulation;
 }
 
 .cell[data-row="0"] {
@@ -411,12 +321,14 @@ button.primary:hover {
 }
 
 .number-pad button {
-  font-size: 1.2rem;
-  padding: 1rem 0;
+  font-size: clamp(1.2rem, 0.6rem + 1vw, 1.45rem);
+  padding: clamp(1rem, 0.8rem + 0.4vw, 1.25rem) 0;
+  min-height: 3.1rem;
   border-radius: 0.95rem;
   background: linear-gradient(180deg, rgba(31, 111, 235, 0.12), rgba(31, 111, 235, 0.06));
   border: 1px solid rgba(31, 69, 160, 0.1);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 10px 18px rgba(31, 69, 160, 0.12);
+  touch-action: manipulation;
 }
 
 .number-pad button:hover {
@@ -427,7 +339,7 @@ button.primary:hover {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  max-width: 360px;
+  max-width: 400px;
   position: sticky;
   top: clamp(1.5rem, 2vw, 2.4rem);
 }
@@ -445,6 +357,40 @@ button.primary:hover {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.stage-overview__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.stage-badge {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(31, 111, 235, 0.18), rgba(31, 111, 235, 0.08));
+  color: var(--accent-strong);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.stage-overview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.stage-overview__footer {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
 }
 
 .panel-card h2 {
@@ -1100,9 +1046,18 @@ button.primary:hover {
   padding-inline: 1.6rem;
 }
 
-.focus-mode .app-header,
 .focus-mode .board-section {
   transition: width 0.25s ease, padding 0.25s ease;
+}
+
+@media (min-width: 960px) {
+  .stage-overview__footer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stage-overview__footer button:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 960px) {
@@ -1145,16 +1100,6 @@ button.primary:hover {
 
   .app-shell::before {
     display: none;
-  }
-
-  .header-controls {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .header-buttons {
-    width: 100%;
-    justify-content: flex-start;
   }
 
   .number-pad {

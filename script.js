@@ -123,6 +123,7 @@ const elements = {
   board: document.getElementById("sudokuBoard"),
   stageSelect: document.getElementById("stageSelect"),
   resetProgress: document.getElementById("resetProgress"),
+  resetStage: document.getElementById("resetStage"),
   focusModeToggle: document.getElementById("focusModeToggle"),
   shortcutHelpButton: document.getElementById("shortcutHelpButton"),
   stageNumber: document.getElementById("stageNumber"),
@@ -148,7 +149,7 @@ const elements = {
   stageModalContent: document.querySelector(".stage-modal__content"),
   closeStageModalButton: document.getElementById("closeStageModal"),
   stageModalSubtitle: document.getElementById("stageModalSubtitle"),
-  currentStagePill: document.getElementById("currentStagePill"),
+  currentStageBadge: document.getElementById("currentStageBadge"),
 };
 
 const cellTemplate = document.getElementById("cellTemplate");
@@ -524,6 +525,16 @@ function attachEventListeners() {
     loadStageById(stageNumber);
   });
 
+  elements.resetStage?.addEventListener("click", () => {
+    if (
+      confirm(
+        "このステージを最初からやり直しますか？現在の盤面とメモは失われます。"
+      )
+    ) {
+      resetCurrentStage();
+    }
+  });
+
   elements.resetProgress.addEventListener("click", () => {
     if (confirm("進行状況をリセットしますか？すべてのベストタイムも消去されます。")) {
       progress = { currentStage: START_STAGE_ID, clearedStages: [], bestTimes: {} };
@@ -535,9 +546,27 @@ function attachEventListeners() {
     }
   });
 
+  elements.numberPad.addEventListener("pointerdown", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest("button[data-value]");
+    if (!button || selectedIndex === null) return;
+    if (event.pointerType === "touch" || event.pointerType === "pen") {
+      event.preventDefault();
+      button.dataset.touchHandled = "true";
+      const value = Number(button.dataset.value);
+      const useNotes = elements.notesToggle.checked && value !== 0;
+      handleInputValue(value, { useNotes });
+    }
+  });
+
   elements.numberPad.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-value]");
     if (!button || selectedIndex === null) return;
+    if (button.dataset.touchHandled === "true") {
+      button.dataset.touchHandled = "";
+      return;
+    }
     const value = Number(button.dataset.value);
     const useNotes =
       (elements.notesToggle.checked || event.shiftKey || event.altKey || event.metaKey) && value !== 0;
@@ -575,6 +604,12 @@ function buildBoard() {
     cell.dataset.row = row;
     cell.dataset.col = col;
     cell.addEventListener("click", () => selectCell(index));
+    cell.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "touch" || event.pointerType === "pen") {
+        event.preventDefault();
+        selectCell(index);
+      }
+    });
     cells.push(cell);
     fragment.appendChild(cell);
   }
@@ -1202,6 +1237,11 @@ function loadStageById(stageId, restart = false) {
   loadStage(targetIndex, restart);
 }
 
+function resetCurrentStage() {
+  loadStage(currentStageIndex, true);
+  setStatus("盤面をリセットしました。", "info");
+}
+
 function loadStage(stageIndex, restart = false) {
   closeStageModal({ restoreFocus: false });
   currentStageIndex = stageIndex;
@@ -1253,8 +1293,8 @@ function loadStage(stageIndex, restart = false) {
 
 function updateStageSummary(stageConfig) {
   if (!stageConfig) return;
-  if (elements.currentStagePill) {
-    elements.currentStagePill.textContent = formatStageLabel(stageConfig);
+  if (elements.currentStageBadge) {
+    elements.currentStageBadge.textContent = formatStageLabel(stageConfig);
   }
 }
 

@@ -14,31 +14,6 @@
   </head>
   <body>
     <div class="app-shell">
-      <header class="app-header">
-        <div class="brand">
-          <div class="brand-text">
-            <h1>段階式ナンプレ</h1>
-            <p>初級〜中級を少しずつ攻略。全50ステージ。</p>
-            <p class="current-stage-pill" id="currentStagePill">ステージ01｜北海道</p>
-          </div>
-          <figure class="brand-hero">
-            <img
-              src="assets/sudoku-hero.svg"
-              alt="旗を掲げてナンプレ冒険へ旅立つイラスト"
-              loading="lazy"
-            />
-          </figure>
-        </div>
-        <div class="header-controls">
-          <button id="openStageModal" class="primary">マップを開く</button>
-          <div class="header-buttons">
-            <button id="focusModeToggle" class="secondary" aria-pressed="false">集中モード</button>
-            <button id="shortcutHelpButton" class="secondary" aria-haspopup="dialog">キーボードガイド</button>
-            <button id="resetProgress" class="secondary">進行状況をリセット</button>
-          </div>
-        </div>
-      </header>
-
       <main class="app-layout">
         <section class="board-section" aria-label="ナンプレ盤面">
           <div id="sudokuBoard" class="sudoku-board" role="grid" aria-label="ナンプレ盤面"></div>
@@ -55,10 +30,15 @@
             <button data-value="0" class="secondary">消去</button>
           </div>
         </section>
-
-        <aside class="info-panel" aria-label="補助機能">
-          <section class="panel-card">
-            <h2>ステージ情報</h2>
+        <aside class="info-panel" aria-label="補助と情報">
+          <section class="panel-card stage-overview">
+            <div class="stage-overview__header">
+              <p class="stage-badge" id="currentStageBadge">ステージ01｜北海道</p>
+              <div class="stage-overview__actions">
+                <button id="openStageModal" class="primary" type="button">マップを開く</button>
+                <button id="resetStage" class="secondary" type="button">盤面をリセット</button>
+              </div>
+            </div>
             <ul class="stage-meta">
               <li class="stage-meta__item">
                 <img src="assets/icon-map-pin.svg" alt="" class="stage-meta__icon" />
@@ -96,6 +76,11 @@
             <div class="progress">
               <div class="progress-bar"><span id="progressFill"></span></div>
               <p id="progressLabel">0 / 50 ステージクリア</p>
+            </div>
+            <div class="stage-overview__footer">
+              <button id="focusModeToggle" class="secondary" type="button" aria-pressed="false">集中モード</button>
+              <button id="shortcutHelpButton" class="secondary" type="button" aria-haspopup="dialog">キーボードガイド</button>
+              <button id="resetProgress" class="ghost" type="button">進行状況をリセット</button>
             </div>
           </section>
 

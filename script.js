@@ -93,6 +93,28 @@ stageConfigs.forEach((stage) => {
   });
 });
 
+const PREFECTURE_STAGE_LIMIT = 46;
+const PREFECTURE_GRID_OVERRIDES = new Map([
+  [23, { row: 11, col: 7 }],
+  [24, { row: 11, col: 6 }],
+  [29, { row: 13, col: 6 }],
+  [32, { row: 12, col: 5 }],
+  [33, { row: 12, col: 6 }],
+  [34, { row: 12, col: 4 }],
+  [35, { row: 13, col: 5 }],
+  [36, { row: 12, col: 7 }],
+  [37, { row: 13, col: 4 }],
+  [38, { row: 14, col: 5 }],
+  [39, { row: 12, col: 2 }],
+  [40, { row: 12, col: 1 }],
+  [41, { row: 13, col: 1 }],
+  [42, { row: 13, col: 2 }],
+  [43, { row: 12, col: 3 }],
+  [44, { row: 13, col: 3 }],
+  [45, { row: 14, col: 3 }],
+  [46, { row: 15, col: 4 }],
+]);
+
 const START_STAGE_ID = stageConfigs[0]?.id ?? 1;
 
 const elements = {
@@ -117,8 +139,12 @@ const elements = {
   numberPad: document.querySelector(".number-pad"),
   hintStatus: document.getElementById("hintStatus"),
   statusMessage: document.getElementById("statusMessage"),
-  stageNodes: document.getElementById("stageNodes"),
-  stageMapSvg: document.querySelector(".stage-map-path"),
+  japanMap: document.getElementById("japanMap"),
+  worldStageList: document.getElementById("worldStageList"),
+  worldUnlockMessage: document.getElementById("worldUnlockMessage"),
+  autoNotesSelected: document.getElementById("autoNotesSelected"),
+  autoNotesAll: document.getElementById("autoNotesAll"),
+  clearNotesButton: document.getElementById("clearNotesButton"),
 };
 
 const cellTemplate = document.getElementById("cellTemplate");
@@ -139,8 +165,8 @@ let historyPointer = -1;
 let progress = loadProgress();
 let hintsUsed = 0;
 
-const stageNodes = [];
-const stagePositionCache = new Map();
+const stageNodeElements = new Map();
+const worldStageElements = new Map();
 
 init();
 
@@ -257,11 +283,20 @@ function attachEventListeners() {
     const button = event.target.closest("button[data-value]");
     if (!button || selectedIndex === null) return;
     const value = Number(button.dataset.value);
-    handleInputValue(value);
+    const useNotes =
+      (elements.notesToggle.checked || event.shiftKey || event.altKey || event.metaKey) && value !== 0;
+    handleInputValue(value, { useNotes });
   });
 
   elements.notesToggle.addEventListener("change", () => {
     setStatus(elements.notesToggle.checked ? "メモモードをオン" : "メモモードをオフ", "info");
+  });
+
+  elements.autoNotesSelected.addEventListener("click", () => autoFillNotes("selection"));
+  elements.autoNotesAll.addEventListener("click", () => autoFillNotes("all"));
+  elements.clearNotesButton.addEventListener("click", (event) => {
+    const scope = event.shiftKey ? "all" : selectedIndex === null ? "all" : "selection";
+    clearNotes(scope);
   });
 
   elements.autoCheckToggle.addEventListener("change", () => {
@@ -306,20 +341,34 @@ function buildBoard() {
   elements.board.appendChild(fragment);
 }
 
+function getPrefectureGridPosition(stage) {
+  if (!stage.position) {
+    return { row: 1, col: 1 };
+  }
+  let row = Math.round(stage.position.y / 8) + 1;
+  let col = Math.round(stage.position.x / 8) + 1;
+  if (PREFECTURE_GRID_OVERRIDES.has(stage.id)) {
+    const override = PREFECTURE_GRID_OVERRIDES.get(stage.id);
+    row = override.row;
+    col = override.col;
+  }
+  return { row, col };
+}
+
 function buildStageMap() {
-  stageNodes.length = 0;
-  stagePositionCache.clear();
-  elements.stageNodes.innerHTML = "";
-  elements.stageMapSvg.innerHTML = "";
-  const drawnEdges = new Set();
+  stageNodeElements.clear();
+  worldStageElements.clear();
+  elements.japanMap.innerHTML = "";
+  elements.worldStageList.innerHTML = "";
+  let maxRow = 0;
+  let maxCol = 0;
+  const japanFragment = document.createDocumentFragment();
+  const worldFragment = document.createDocumentFragment();
   stageConfigs.forEach((stage) => {
-    const position = computeStagePosition(stage.id);
     const node = document.createElement("button");
     node.type = "button";
     node.className = "stage-node";
     node.dataset.stageId = stage.id;
-    node.style.setProperty("--x", `${position.x}%`);
-    node.style.setProperty("--y", `${position.y}%`);
     node.innerHTML = `
       <span class="stage-index">${stage.id.toString().padStart(2, "0")}</span>
       <span class="stage-label">${stage.name}</span>
@@ -333,29 +382,27 @@ function buildStageMap() {
       }
       loadStageById(stage.id);
     });
-    elements.stageNodes.appendChild(node);
-    stageNodes.push(node);
-
-    stage.neighbors.forEach((neighborId) => {
-      const neighbor = stageById.get(neighborId);
-      if (!neighbor) return;
-      const edgeKey = `${stage.id}-${neighborId}`;
-      if (drawnEdges.has(edgeKey)) return;
-      drawnEdges.add(edgeKey);
-      const neighborPosition = computeStagePosition(neighborId);
-      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.dataset.from = stage.id;
-      line.dataset.to = neighborId;
-      line.setAttribute("x1", position.x);
-      line.setAttribute("y1", position.y);
-      line.setAttribute("x2", neighborPosition.x);
-      line.setAttribute("y2", neighborPosition.y);
-      line.setAttribute("stroke", "currentColor");
-      line.setAttribute("stroke-width", "1.6");
-      line.setAttribute("stroke-linecap", "round");
-      elements.stageMapSvg.appendChild(line);
-    });
+    if (stage.id <= PREFECTURE_STAGE_LIMIT) {
+      node.classList.add("prefecture-node");
+      const { row, col } = getPrefectureGridPosition(stage);
+      maxRow = Math.max(maxRow, row);
+      maxCol = Math.max(maxCol, col);
+      node.style.gridRow = row;
+      node.style.gridColumn = col;
+      japanFragment.appendChild(node);
+      stageNodeElements.set(stage.id, node);
+    } else {
+      node.classList.add("world-node");
+      worldFragment.appendChild(node);
+      worldStageElements.set(stage.id, node);
+    }
   });
+  if (maxRow === 0) maxRow = 1;
+  if (maxCol === 0) maxCol = 1;
+  elements.japanMap.style.setProperty("--rows", maxRow);
+  elements.japanMap.style.setProperty("--cols", maxCol);
+  elements.japanMap.appendChild(japanFragment);
+  elements.worldStageList.appendChild(worldFragment);
   updateStageMap();
 }
 
@@ -364,32 +411,24 @@ function updateStageMap() {
   const available = getAvailableStageIds();
   const cleared = new Set(progress.clearedStages);
   const currentId = stageConfigs[currentStageIndex]?.id;
-  stageNodes.forEach((node) => {
-    const stageId = Number(node.dataset.stageId);
+  stageNodeElements.forEach((node, stageId) => {
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
     node.classList.toggle("locked", !unlocked.has(stageId));
   });
-  const lines = elements.stageMapSvg.querySelectorAll("line");
-  lines.forEach((line) => {
-    const fromId = Number(line.dataset.from);
-    const toId = Number(line.dataset.to);
-    const active = cleared.has(fromId) || available.has(toId) || cleared.has(toId);
-    line.classList.toggle("active", active);
+  worldStageElements.forEach((node, stageId) => {
+    node.classList.toggle("current", stageId === currentId);
+    node.classList.toggle("cleared", cleared.has(stageId));
+    node.classList.toggle("available", available.has(stageId));
+    node.classList.toggle("locked", !unlocked.has(stageId));
   });
-}
-
-function computeStagePosition(stageId) {
-  if (stagePositionCache.has(stageId)) {
-    return stagePositionCache.get(stageId);
-  }
-  const stage = stageById.get(stageId);
-  const position = stage?.position
-    ? { x: stage.position.x, y: stage.position.y }
-    : { x: 50, y: 50 };
-  stagePositionCache.set(stageId, position);
-  return position;
+  const japanCleared = stageConfigs
+    .filter((stage) => stage.id <= PREFECTURE_STAGE_LIMIT)
+    .every((stage) => cleared.has(stage.id));
+  elements.worldUnlockMessage.hidden = japanCleared;
+  elements.worldStageList.classList.toggle("locked", !japanCleared);
+  elements.worldStageList.setAttribute("aria-hidden", japanCleared ? "false" : "true");
 }
 
 function populateStageSelect() {
@@ -428,7 +467,8 @@ function handleKeydown(event) {
   }
   const key = event.key;
   if (/^[1-9]$/.test(key)) {
-    handleInputValue(Number(key));
+    const useNotes = elements.notesToggle.checked || event.shiftKey || event.altKey;
+    handleInputValue(Number(key), { useNotes });
     event.preventDefault();
   } else if (key === "0" || key === "Backspace" || key === "Delete") {
     handleInputValue(0);
@@ -478,10 +518,10 @@ function moveSelection(direction) {
   selectCell(nextIndex);
 }
 
-function handleInputValue(value) {
+function handleInputValue(value, { useNotes = false } = {}) {
   if (selectedIndex === null) return;
   if (cells[selectedIndex].classList.contains("locked")) return;
-  if (elements.notesToggle.checked && value !== 0) {
+  if (useNotes && value !== 0) {
     toggleNote(selectedIndex, value);
   } else {
     setCellValue(selectedIndex, value);
@@ -495,6 +535,7 @@ function setCellValue(index, value, { silent = false } = {}) {
   values[index] = value;
   notes[index].clear();
   updateCellDisplay(index);
+  const peerNoteChanges = value !== 0 ? clearNotesWithValue(index, value) : [];
   if (!silent) {
     pushHistory({
       type: "value",
@@ -503,6 +544,7 @@ function setCellValue(index, value, { silent = false } = {}) {
       newValue: value,
       previousNotes,
       newNotes: [],
+      peerNoteChanges,
     });
   }
   updateValidation();
@@ -551,6 +593,118 @@ function toggleNote(index, value, { silent = false } = {}) {
   }
 }
 
+function autoFillNotes(scope = "selection") {
+  const targets = resolveNoteTargets(scope, { includeFilled: false });
+  if (targets.length === 0) {
+    setStatus(scope === "all" ? "候補を入れられるマスがありません。" : "候補を入れたいマスを選択してください。", "warning");
+    return;
+  }
+  const changes = [];
+  targets.forEach((index) => {
+    if (cells[index].classList.contains("locked")) return;
+    if (values[index] !== 0) return;
+    const candidates = getCandidates(values, index);
+    const previousNotes = Array.from(notes[index]);
+    if (areNotesEqual(notes[index], candidates)) return;
+    notes[index] = new Set(candidates);
+    updateCellDisplay(index);
+    changes.push({ index, previousNotes, newNotes: candidates });
+  });
+  if (changes.length === 0) {
+    setStatus("候補に変更はありませんでした。", "info");
+    return;
+  }
+  pushHistory({ type: "bulkNotes", changes });
+  const message = scope === "all" ? "空きマスの候補を一括生成しました。" : "選択マスの候補を自動入力しました。";
+  setStatus(message, "info");
+}
+
+function clearNotes(scope = "selection") {
+  const targets = resolveNoteTargets(scope, { includeFilled: true });
+  if (targets.length === 0) {
+    setStatus("候補を消したいマスを選択してください。", "warning");
+    return;
+  }
+  const changes = [];
+  targets.forEach((index) => {
+    if (notes[index].size === 0) return;
+    const previousNotes = Array.from(notes[index]);
+    notes[index].clear();
+    updateCellDisplay(index);
+    changes.push({ index, previousNotes, newNotes: [] });
+  });
+  if (changes.length === 0) {
+    setStatus("消去できる候補はありませんでした。", "info");
+    return;
+  }
+  pushHistory({ type: "bulkNotes", changes });
+  const message = scope === "all" ? "全マスの候補をリセットしました。" : "選択マスの候補を消去しました。";
+  setStatus(message, "info");
+}
+
+function resolveNoteTargets(scope, { includeFilled }) {
+  if (scope === "selection") {
+    if (selectedIndex === null) return [];
+    if (cells[selectedIndex].classList.contains("locked")) return [];
+    if (!includeFilled && values[selectedIndex] !== 0) return [];
+    return [selectedIndex];
+  }
+  const indices = [];
+  for (let index = 0; index < TOTAL_CELLS; index++) {
+    if (cells[index].classList.contains("locked")) continue;
+    if (!includeFilled && values[index] !== 0) continue;
+    indices.push(index);
+  }
+  return indices;
+}
+
+function areNotesEqual(noteSet, candidates) {
+  if (noteSet.size !== candidates.length) return false;
+  return candidates.every((value) => noteSet.has(value));
+}
+
+function getPeerIndices(index) {
+  const peers = new Set();
+  const row = Math.floor(index / BOARD_SIZE);
+  const col = index % BOARD_SIZE;
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    peers.add(row * BOARD_SIZE + i);
+    peers.add(i * BOARD_SIZE + col);
+  }
+  const startRow = Math.floor(row / 3) * 3;
+  const startCol = Math.floor(col / 3) * 3;
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      peers.add((startRow + r) * BOARD_SIZE + (startCol + c));
+    }
+  }
+  peers.delete(index);
+  return Array.from(peers);
+}
+
+function clearNotesWithValue(index, value) {
+  if (value === 0) return [];
+  const peers = getPeerIndices(index);
+  const changes = [];
+  peers.forEach((peerIndex) => {
+    if (!notes[peerIndex].has(value)) return;
+    const previousNotes = Array.from(notes[peerIndex]);
+    notes[peerIndex].delete(value);
+    updateCellDisplay(peerIndex);
+    changes.push({ index: peerIndex, previousNotes, newNotes: Array.from(notes[peerIndex]) });
+  });
+  return changes;
+}
+
+function applyPeerNoteChanges(changes, undo) {
+  if (!Array.isArray(changes)) return;
+  changes.forEach((change) => {
+    const targetNotes = undo ? change.previousNotes : change.newNotes;
+    notes[change.index] = new Set(targetNotes);
+    updateCellDisplay(change.index);
+  });
+}
+
 function pushHistory(entry) {
   history.splice(historyPointer + 1);
   history.push(entry);
@@ -582,9 +736,18 @@ function applyHistoryEntry(entry, undo) {
     values[entry.index] = targetValue;
     notes[entry.index] = new Set(targetNotes);
     updateCellDisplay(entry.index);
+    if (entry.peerNoteChanges && entry.peerNoteChanges.length > 0) {
+      applyPeerNoteChanges(entry.peerNoteChanges, undo);
+    }
   } else if (entry.type === "notes") {
     notes[entry.index] = new Set(undo ? entry.previousNotes : entry.newNotes);
     updateCellDisplay(entry.index);
+  } else if (entry.type === "bulkNotes") {
+    entry.changes.forEach((change) => {
+      const targetNotes = undo ? change.previousNotes : change.newNotes;
+      notes[change.index] = new Set(targetNotes);
+      updateCellDisplay(change.index);
+    });
   }
 }
 

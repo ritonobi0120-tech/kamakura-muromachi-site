@@ -82,6 +82,11 @@
               <span>同じ数字をハイライト</span>
             </label>
           </div>
+          <div class="note-tools">
+            <button id="autoNotesSelected" class="secondary">選択マス候補</button>
+            <button id="autoNotesAll" class="secondary">全マス候補</button>
+            <button id="clearNotesButton" class="secondary">候補クリア</button>
+          </div>
           <div class="buttons">
             <button id="hintButton">ヒント</button>
             <button id="checkButton">答え合わせ</button>
@@ -96,8 +101,25 @@
         <section class="panel-card stage-map-card">
           <h2>ワールドマップ</h2>
           <div class="stage-map" aria-label="ステージマップ">
-            <svg class="stage-map-path" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
-            <div class="stage-nodes" id="stageNodes" role="list"></div>
+            <div class="japan-map-header">
+              <h3>日本列島</h3>
+              <p>47都道府県を渡り歩いて全国制覇を目指そう。</p>
+            </div>
+            <div
+              class="japan-map-grid"
+              id="japanMap"
+              role="grid"
+              aria-label="日本の都道府県マップ"
+            ></div>
+            <p id="worldUnlockMessage" class="world-unlock-message">
+              日本全県を制覇すると海外航路が開かれます。
+            </p>
+            <div
+              class="world-stage-list"
+              id="worldStageList"
+              role="list"
+              aria-label="海外と宇宙のステージ"
+            ></div>
           </div>
         </section>
       </aside>

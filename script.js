@@ -3,8 +3,6 @@ const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
 const STORAGE_KEY = "progress-v1";
 const MAX_HINTS = 3;
 const FOCUS_MODE_STORAGE_KEY = "focus-mode-enabled";
-const AUTO_CHECK_STORAGE_KEY = "preference-auto-check";
-const HIGHLIGHT_STORAGE_KEY = "preference-highlight";
 const NOTES_MODE_STORAGE_KEY = "preference-notes-mode";
 
 const baseStageDefinitions = [
@@ -135,22 +133,13 @@ const elements = {
   progressFill: document.getElementById("progressFill"),
   progressLabel: document.getElementById("progressLabel"),
   notesToggle: document.getElementById("notesToggle"),
-  autoCheckToggle: document.getElementById("autoCheckToggle"),
-  highlightToggle: document.getElementById("highlightToggle"),
   hintButton: document.getElementById("hintButton"),
-  checkButton: document.getElementById("checkButton"),
-  undoButton: document.getElementById("undoButton"),
-  redoButton: document.getElementById("redoButton"),
-  restartButton: document.getElementById("restartButton"),
   numberPad: document.querySelector(".number-pad"),
-  hintStatus: document.getElementById("hintStatus"),
+  hintCount: document.getElementById("hintCount"),
   statusMessage: document.getElementById("statusMessage"),
   japanMap: document.getElementById("japanMap"),
   worldStageList: document.getElementById("worldStageList"),
   worldUnlockMessage: document.getElementById("worldUnlockMessage"),
-  autoNotesSelected: document.getElementById("autoNotesSelected"),
-  autoNotesAll: document.getElementById("autoNotesAll"),
-  clearNotesButton: document.getElementById("clearNotesButton"),
   shortcutModal: document.getElementById("shortcutModal"),
   closeShortcutModal: document.getElementById("closeShortcutModal"),
   shortcutModalOk: document.getElementById("shortcutModalOk"),
@@ -275,12 +264,6 @@ function saveBooleanPreference(key, value) {
 function applySavedTogglePreferences() {
   if (elements.notesToggle) {
     elements.notesToggle.checked = loadBooleanPreference(NOTES_MODE_STORAGE_KEY, false);
-  }
-  if (elements.autoCheckToggle) {
-    elements.autoCheckToggle.checked = loadBooleanPreference(AUTO_CHECK_STORAGE_KEY, true);
-  }
-  if (elements.highlightToggle) {
-    elements.highlightToggle.checked = loadBooleanPreference(HIGHLIGHT_STORAGE_KEY, true);
   }
 }
 
@@ -566,37 +549,7 @@ function attachEventListeners() {
     saveBooleanPreference(NOTES_MODE_STORAGE_KEY, elements.notesToggle.checked);
   });
 
-  elements.autoNotesSelected.addEventListener("click", () => autoFillNotes("selection"));
-  elements.autoNotesAll.addEventListener("click", () => autoFillNotes("all"));
-  elements.clearNotesButton.addEventListener("click", (event) => {
-    const scope = event.shiftKey ? "all" : selectedIndex === null ? "all" : "selection";
-    clearNotes(scope);
-  });
-
-  elements.autoCheckToggle.addEventListener("change", () => {
-    updateValidation();
-    setStatus(
-      elements.autoCheckToggle.checked ? "自動ミスチェックをオン" : "自動ミスチェックをオフ",
-      "info"
-    );
-    saveBooleanPreference(AUTO_CHECK_STORAGE_KEY, elements.autoCheckToggle.checked);
-  });
-
-  elements.highlightToggle.addEventListener("change", () => {
-    updateHighlights();
-    saveBooleanPreference(HIGHLIGHT_STORAGE_KEY, elements.highlightToggle.checked);
-  });
-
   elements.hintButton.addEventListener("click", useHint);
-  elements.checkButton.addEventListener("click", manualCheck);
-  elements.undoButton.addEventListener("click", () => applyHistory("undo"));
-  elements.redoButton.addEventListener("click", () => applyHistory("redo"));
-  elements.restartButton.addEventListener("click", () => {
-    if (confirm("このステージを最初からやり直しますか？")) {
-      loadStage(currentStageIndex, true);
-      setStatus("ステージを最初からやり直しました。", "info");
-    }
-  });
 
   elements.focusModeToggle?.addEventListener("click", () => toggleFocusMode());
   elements.shortcutHelpButton?.addEventListener("click", () => openShortcutModal());
@@ -1081,8 +1034,12 @@ function applyHistoryEntry(entry, undo) {
 }
 
 function updateHistoryButtons() {
-  elements.undoButton.disabled = historyPointer < 0;
-  elements.redoButton.disabled = historyPointer >= history.length - 1;
+  if (elements.undoButton) {
+    elements.undoButton.disabled = historyPointer < 0;
+  }
+  if (elements.redoButton) {
+    elements.redoButton.disabled = historyPointer >= history.length - 1;
+  }
 }
 
 function updateCellDisplay(index) {
@@ -1105,7 +1062,6 @@ function updateCellDisplay(index) {
 
 function updateValidation() {
   cells.forEach((cell) => cell.classList.remove("error"));
-  if (!elements.autoCheckToggle.checked) return;
   for (let index = 0; index < TOTAL_CELLS; index++) {
     const value = values[index];
     if (value === 0) continue;
@@ -1140,7 +1096,6 @@ function updateRelatedHighlights() {
 
 function updateHighlights() {
   cells.forEach((cell) => cell.classList.remove("same-value"));
-  if (!elements.highlightToggle.checked) return;
   if (selectedIndex === null) return;
   const value = values[selectedIndex];
   if (value === 0) return;
@@ -1149,21 +1104,6 @@ function updateHighlights() {
       cells[idx].classList.add("same-value");
     }
   });
-}
-
-function manualCheck() {
-  const incorrect = [];
-  for (let index = 0; index < TOTAL_CELLS; index++) {
-    if (values[index] !== 0 && values[index] !== solution[index]) {
-      incorrect.push(index);
-    }
-  }
-  if (incorrect.length === 0) {
-    setStatus("現時点でミスはありません。引き続き頑張りましょう！", "success");
-  } else {
-    incorrect.forEach((idx) => cells[idx].classList.add("error"));
-    setStatus(`${incorrect.length} 箇所のミスが見つかりました。赤く表示されています。`, "warning");
-  }
 }
 
 function useHint() {
@@ -1371,12 +1311,12 @@ function setStatus(message, tone = "info") {
 
 function updateHintUI() {
   const remaining = Math.max(0, MAX_HINTS - hintsUsed);
-  if (elements.hintStatus) {
-    elements.hintStatus.textContent = `ヒント残り: ${remaining}`;
-  }
   if (elements.hintButton) {
     const solved = values.length > 0 && values.every((value, index) => value === solution[index]);
     elements.hintButton.disabled = remaining === 0 || solved;
+  }
+  if (elements.hintCount) {
+    elements.hintCount.textContent = `残り ${remaining} 回`;
   }
 }
 

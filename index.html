@@ -99,36 +99,25 @@
             </div>
           </section>
 
-          <section class="panel-card">
-            <h2>操作</h2>
-            <div class="toggles">
-              <label>
+          <section class="panel-card panel-card--controls">
+            <h2>プレイ支援</h2>
+            <div class="play-controls">
+              <label class="control-toggle" for="notesToggle">
                 <input type="checkbox" id="notesToggle" />
-                <span>メモモード</span>
+                <span class="control-toggle__track" aria-hidden="true">
+                  <span class="control-toggle__thumb"></span>
+                </span>
+                <span class="control-toggle__content">
+                  <span class="control-toggle__title">メモモード</span>
+                  <span class="control-toggle__caption">1マスに候補を複数キープ</span>
+                </span>
               </label>
-              <label>
-                <input type="checkbox" id="autoCheckToggle" checked />
-                <span>自動ミスチェック</span>
-              </label>
-              <label>
-                <input type="checkbox" id="highlightToggle" checked />
-                <span>同じ数字をハイライト</span>
-              </label>
+              <button id="hintButton" class="control-hint" type="button">
+                <span class="hint-button__label">ヒントを使う</span>
+                <span class="hint-button__count" id="hintCount">残り 3 回</span>
+              </button>
+              <p class="status-message" id="statusMessage" aria-live="polite"></p>
             </div>
-            <div class="note-tools">
-              <button id="autoNotesSelected" class="secondary">選択マス候補</button>
-              <button id="autoNotesAll" class="secondary">全マス候補</button>
-              <button id="clearNotesButton" class="secondary">候補クリア</button>
-            </div>
-            <div class="buttons">
-              <button id="hintButton">ヒント</button>
-              <button id="checkButton">答え合わせ</button>
-              <button id="undoButton" class="secondary">元に戻す</button>
-              <button id="redoButton" class="secondary">やり直す</button>
-              <button id="restartButton" class="secondary">ステージやり直し</button>
-            </div>
-            <p class="hint-status" id="hintStatus">ヒント残り: 3</p>
-            <p class="status-message" id="statusMessage" aria-live="polite"></p>
           </section>
         </aside>
       </main>

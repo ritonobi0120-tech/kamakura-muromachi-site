@@ -374,20 +374,24 @@ button.primary:hover {
 
 .cell .notes {
   position: absolute;
-  inset: 0.3rem;
+  inset: 0.25rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 0.1rem;
-  font-size: 0.6rem;
+  gap: 0.12rem;
+  font-size: clamp(0.55rem, 0.38rem + 0.5vw, 0.78rem);
   color: var(--note);
   pointer-events: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .cell .notes span {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 0.25rem;
+  background: rgba(31, 111, 235, 0.06);
 }
 
 .number-pad {
@@ -557,96 +561,159 @@ button.primary:hover {
   transition: width 0.4s ease;
 }
 
-.toggles {
-  display: grid;
-  gap: 0.6rem;
+.panel-card--controls {
+  backdrop-filter: blur(12px);
 }
 
-.toggles label {
+.play-controls {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.control-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(135deg, rgba(31, 111, 235, 0.12), rgba(42, 157, 143, 0.1));
+  border: 1px solid rgba(31, 69, 160, 0.18);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border 0.18s ease;
+}
+
+.control-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 32px rgba(31, 69, 160, 0.16);
+  border-color: rgba(31, 69, 160, 0.28);
+}
+
+.control-toggle input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.control-toggle__track {
+  width: 2.6rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: rgba(31, 69, 160, 0.18);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  background: rgba(31, 111, 235, 0.08);
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(31, 69, 160, 0.12);
+  padding: 0.18rem;
+  transition: background 0.2s ease;
 }
 
-.toggles input[type="checkbox"] {
-  appearance: none;
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: 0.3rem;
-  border: 2px solid rgba(31, 69, 160, 0.25);
-  display: grid;
-  place-items: center;
+.control-toggle__thumb {
+  width: 1.08rem;
+  height: 1.08rem;
+  border-radius: 50%;
   background: #fff;
-  transition: border 0.2s ease, background 0.2s ease;
-}
-
-.toggles input[type="checkbox"]::after {
-  content: "";
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 0.2rem;
-  background: transparent;
-  transform: scale(0);
+  box-shadow: 0 3px 8px rgba(25, 39, 85, 0.25);
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.toggles input[type="checkbox"]:checked {
-  border-color: var(--accent);
-  background: rgba(31, 111, 235, 0.15);
+.control-toggle input:checked + .control-toggle__track {
+  background: linear-gradient(135deg, #1f6feb, #2a9d8f);
 }
 
-.toggles input[type="checkbox"]:checked::after {
-  transform: scale(1);
-  background: var(--accent-strong);
+.control-toggle input:checked + .control-toggle__track .control-toggle__thumb {
+  transform: translateX(1.1rem);
+  background: #fff;
 }
 
-.note-tools {
+.control-toggle input:focus-visible + .control-toggle__track {
+  outline: 3px solid rgba(31, 111, 235, 0.4);
+  outline-offset: 3px;
+}
+
+.control-toggle__content {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0.4rem 0 0.2rem;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.note-tools button {
-  flex: 1 1 30%;
+.control-toggle__title {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.control-toggle__caption {
   font-size: 0.85rem;
-  min-width: 6.6rem;
-}
-
-.buttons {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.buttons button {
-  width: 100%;
-}
-
-.hint-status {
-  margin: 0;
-  font-size: 0.9rem;
   color: var(--fg-soft);
 }
 
-.status-message {
-  min-height: 1.4rem;
-  font-size: 0.95rem;
+.control-toggle input:checked ~ .control-toggle__content .control-toggle__title {
+  color: var(--accent);
+}
+
+.control-toggle input:checked ~ .control-toggle__content .control-toggle__caption {
+  color: rgba(31, 69, 160, 0.7);
+}
+
+.control-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  width: 100%;
+  padding: 1rem 1.3rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(135deg, #1f6feb, #2a9d8f);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 18px 35px rgba(31, 69, 160, 0.24);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  cursor: pointer;
+}
+
+.control-hint:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 40px rgba(31, 69, 160, 0.28);
+  filter: brightness(1.02);
+}
+
+.control-hint:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.25) brightness(0.92);
+  box-shadow: none;
+}
+
+.hint-button__label {
+  display: block;
+}
+
+.hint-button__count {
+  font-size: 0.85rem;
   font-weight: 500;
+  opacity: 0.85;
+}
+
+
+.status-message {
+  min-height: 1.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   margin: 0;
   color: var(--fg);
-  transition: color 0.2s ease, background 0.2s ease;
-  padding: 0.2rem 0;
-  border-radius: 0.7rem;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  padding: 0.25rem 0.2rem;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
 }
 
 .status-message:not(:empty) {
-  padding: 0.4rem 0.75rem;
-  background: rgba(31, 111, 235, 0.12);
+  padding: 0.5rem 0.85rem;
+  background: rgba(31, 111, 235, 0.1);
+  border-color: rgba(31, 111, 235, 0.25);
+  box-shadow: 0 12px 20px rgba(31, 69, 160, 0.12);
 }
 
 .status-message.info {
@@ -655,6 +722,7 @@ button.primary:hover {
 
 .status-message.info:not(:empty) {
   background: rgba(31, 111, 235, 0.12);
+  border-color: rgba(31, 111, 235, 0.35);
 }
 
 .status-message.success {
@@ -663,6 +731,7 @@ button.primary:hover {
 
 .status-message.success:not(:empty) {
   background: rgba(42, 157, 143, 0.12);
+  border-color: rgba(42, 157, 143, 0.35);
 }
 
 .status-message.warning {
@@ -671,6 +740,7 @@ button.primary:hover {
 
 .status-message.warning:not(:empty) {
   background: rgba(230, 57, 70, 0.12);
+  border-color: rgba(230, 57, 70, 0.35);
 }
 
 .stage-modal {

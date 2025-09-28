@@ -617,15 +617,23 @@ function buildStageMap() {
     node.type = "button";
     node.className = "stage-node";
     node.dataset.stageId = stage.id;
-    node.innerHTML = `
-      <span class="stage-index">${stage.id.toString().padStart(2, "0")}</span>
-      <span class="stage-label">${stage.name}</span>
-    `;
+
+    const indexSpan = document.createElement("span");
+    indexSpan.className = "stage-index";
+    indexSpan.textContent = stage.id.toString().padStart(2, "0");
+
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "stage-label";
+    labelSpan.textContent = stage.name;
+
+    node.appendChild(indexSpan);
+    node.appendChild(labelSpan);
+
     node.title = `${stage.name}｜${stage.difficulty}`;
     node.setAttribute("aria-label", `${stage.name}（${stage.difficulty}）`);
     node.addEventListener("click", () => {
       if (isStageLocked(stage.id)) {
-        setStatus(`${stage.name}はまだ解放されていません。`, "warning");
+        setStatus("まだ解放されていないステージです。", "warning");
         return;
       }
       loadStageById(stage.id);
@@ -659,6 +667,23 @@ function updateStageMap() {
   stageNodeElements.forEach((node, stageId) => {
     const isLocked = !unlocked.has(stageId);
     const isFogged = isLocked && !cleared.has(stageId);
+    const stage = stageById.get(stageId);
+    const indexSpan = node.querySelector(".stage-index");
+    const labelSpan = node.querySelector(".stage-label");
+    if (stage && indexSpan && labelSpan) {
+      if (isLocked && !cleared.has(stageId)) {
+        indexSpan.textContent = "--";
+        labelSpan.textContent = "？？？";
+        node.title = "未解放のステージ";
+        node.setAttribute("aria-label", "未解放のステージ");
+      } else {
+        indexSpan.textContent = stage.id.toString().padStart(2, "0");
+        labelSpan.textContent = stage.name;
+        const ariaLabel = `${stage.name}（${stage.difficulty}）${cleared.has(stageId) ? " クリア済み" : ""}`;
+        node.title = `${stage.name}｜${stage.difficulty}`;
+        node.setAttribute("aria-label", ariaLabel);
+      }
+    }
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
@@ -670,6 +695,23 @@ function updateStageMap() {
   worldStageElements.forEach((node, stageId) => {
     const isLocked = !unlocked.has(stageId);
     const isFogged = isLocked && !cleared.has(stageId);
+    const stage = stageById.get(stageId);
+    const indexSpan = node.querySelector(".stage-index");
+    const labelSpan = node.querySelector(".stage-label");
+    if (stage && indexSpan && labelSpan) {
+      if (isLocked && !cleared.has(stageId)) {
+        indexSpan.textContent = "--";
+        labelSpan.textContent = "？？？";
+        node.title = "未解放のステージ";
+        node.setAttribute("aria-label", "未解放のステージ");
+      } else {
+        indexSpan.textContent = stage.id.toString().padStart(2, "0");
+        labelSpan.textContent = stage.name;
+        const ariaLabel = `${stage.name}（${stage.difficulty}）${cleared.has(stageId) ? " クリア済み" : ""}`;
+        node.title = `${stage.name}｜${stage.difficulty}`;
+        node.setAttribute("aria-label", ariaLabel);
+      }
+    }
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
@@ -692,11 +734,15 @@ function populateStageSelect() {
   stageConfigs.forEach((stage) => {
     const option = document.createElement("option");
     option.value = stage.id;
-    option.textContent = `ステージ ${stage.id.toString().padStart(2, "0")}｜${stage.name}｜${stage.difficulty}`;
+    const isUnlocked = unlocked.has(stage.id);
+    const labelName = isUnlocked ? stage.name : "？？？";
+    const labelDifficulty = isUnlocked ? stage.difficulty : "？？？";
+    const labelStage = isUnlocked ? stage.id.toString().padStart(2, "0") : "--";
+    option.textContent = `ステージ ${labelStage}｜${labelName}｜${labelDifficulty}`;
     if (stage.id === stageConfigs[currentStageIndex]?.id) {
       option.selected = true;
     }
-    if (!unlocked.has(stage.id)) {
+    if (!isUnlocked) {
       option.disabled = true;
     }
     elements.stageSelect.appendChild(option);

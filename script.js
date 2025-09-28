@@ -240,6 +240,13 @@ function applySavedTogglePreferences() {
   }
 }
 
+function hasClearedAllPrefectures(state = progress) {
+  const clearedStages = new Set(state?.clearedStages ?? []);
+  return stageConfigs
+    .filter((stage) => stage.id <= PREFECTURE_STAGE_LIMIT)
+    .every((stage) => clearedStages.has(stage.id));
+}
+
 function getAvailableStageIds() {
   const unlocked = getUnlockedStageIds();
   const cleared = new Set(progress.clearedStages);
@@ -256,17 +263,22 @@ function getUnlockedStageIds() {
   const cleared = new Set(progress.clearedStages);
   const unlocked = new Set(progress.clearedStages);
   const startStageId = stageConfigs[0]?.id;
+  const japanCleared = hasClearedAllPrefectures();
   if (startStageId) {
     unlocked.add(startStageId);
   }
   stageConfigs.forEach((stage) => {
     if (stage.parents.length === 0) {
-      unlocked.add(stage.id);
+      if (stage.id <= PREFECTURE_STAGE_LIMIT || japanCleared) {
+        unlocked.add(stage.id);
+      }
       return;
     }
     const anyParentCleared = stage.parents.some((parentId) => cleared.has(parentId));
     if (anyParentCleared) {
-      unlocked.add(stage.id);
+      if (stage.id <= PREFECTURE_STAGE_LIMIT || japanCleared) {
+        unlocked.add(stage.id);
+      }
     }
   });
   return unlocked;
@@ -720,9 +732,7 @@ function updateStageMap() {
     node.toggleAttribute("aria-disabled", isLocked);
     node.disabled = isLocked;
   });
-  const japanCleared = stageConfigs
-    .filter((stage) => stage.id <= PREFECTURE_STAGE_LIMIT)
-    .every((stage) => cleared.has(stage.id));
+  const japanCleared = hasClearedAllPrefectures();
   elements.worldUnlockMessage.hidden = japanCleared;
   elements.worldStageList.classList.toggle("locked", !japanCleared);
   elements.worldStageList.setAttribute("aria-hidden", japanCleared ? "false" : "true");

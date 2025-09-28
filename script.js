@@ -1097,25 +1097,6 @@ function updateValidation({ force = false } = {}) {
 
 function updateRelatedHighlights() {
   cells.forEach((cell) => cell.classList.remove("related"));
-  if (selectedIndex === null) return;
-  const row = Math.floor(selectedIndex / BOARD_SIZE);
-  const col = selectedIndex % BOARD_SIZE;
-  for (let c = 0; c < BOARD_SIZE; c++) {
-    const idx = row * BOARD_SIZE + c;
-    cells[idx].classList.add("related");
-  }
-  for (let r = 0; r < BOARD_SIZE; r++) {
-    const idx = r * BOARD_SIZE + col;
-    cells[idx].classList.add("related");
-  }
-  const startRow = Math.floor(row / 3) * 3;
-  const startCol = Math.floor(col / 3) * 3;
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      const idx = (startRow + r) * BOARD_SIZE + (startCol + c);
-      cells[idx].classList.add("related");
-    }
-  }
 }
 
 function useHint() {

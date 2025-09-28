@@ -276,10 +276,6 @@ button.ghost:hover {
   background: rgba(31, 111, 235, 0.22);
 }
 
-.cell.related {
-  background: rgba(31, 111, 235, 0.12);
-}
-
 .cell.error {
   background: rgba(230, 57, 70, 0.18);
   color: var(--error);

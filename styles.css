@@ -309,11 +309,11 @@ button.ghost:hover {
 }
 
 .cell.has-value .notes {
-  opacity: 0.38;
+  opacity: 0.55;
 }
 
 .cell.has-value .notes span {
-  background: rgba(31, 69, 160, 0.08);
+  background: rgba(31, 69, 160, 0.12);
 }
 
 .cell.hint-filled .notes span {
@@ -1173,15 +1173,19 @@ button.ghost:hover {
   outline-offset: 3px;
 }
 
+.stage-node:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .stage-node.locked {
   background: linear-gradient(160deg, #e2e7f7, #ccd7ee);
   color: rgba(43, 52, 77, 0.6);
   box-shadow: none;
   filter: grayscale(0.35);
-  cursor: not-allowed;
 }
 
-.stage-node.locked::after {
+.stage-node.fogged::after {
   opacity: 0.85;
 }
 

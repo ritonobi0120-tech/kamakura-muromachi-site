@@ -658,19 +658,25 @@ function updateStageMap() {
   const currentId = stageConfigs[currentStageIndex]?.id;
   stageNodeElements.forEach((node, stageId) => {
     const isLocked = !unlocked.has(stageId);
+    const isFogged = isLocked && !cleared.has(stageId);
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
     node.classList.toggle("locked", isLocked);
+    node.classList.toggle("fogged", isFogged);
     node.toggleAttribute("aria-disabled", isLocked);
+    node.disabled = isLocked;
   });
   worldStageElements.forEach((node, stageId) => {
     const isLocked = !unlocked.has(stageId);
+    const isFogged = isLocked && !cleared.has(stageId);
     node.classList.toggle("current", stageId === currentId);
     node.classList.toggle("cleared", cleared.has(stageId));
     node.classList.toggle("available", available.has(stageId));
     node.classList.toggle("locked", isLocked);
+    node.classList.toggle("fogged", isFogged);
     node.toggleAttribute("aria-disabled", isLocked);
+    node.disabled = isLocked;
   });
   const japanCleared = stageConfigs
     .filter((stage) => stage.id <= PREFECTURE_STAGE_LIMIT)

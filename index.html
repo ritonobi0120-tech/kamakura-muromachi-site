@@ -13,9 +13,30 @@
     />
   </head>
   <body>
+    <header class="app-hero" aria-labelledby="appTitle">
+      <div class="app-hero__inner">
+        <div class="app-hero__content">
+          <p class="app-hero__kicker">Sudoku Adventure</p>
+          <h1 id="appTitle" class="app-hero__title">ナンプレ冒険譚</h1>
+          <p class="app-hero__description">
+            全国の都道府県を巡って50ステージを攻略。ヒントとメモを活用して、徐々に難しくなるナンプレを制覇しよう。
+          </p>
+        </div>
+        <div class="app-hero__visual" aria-hidden="true">
+          <img src="assets/sudoku-hero.svg" alt="" loading="lazy" />
+        </div>
+      </div>
+    </header>
     <div class="app-shell">
       <main class="app-layout">
         <section class="board-section" aria-label="ナンプレ盤面">
+          <header class="board-header">
+            <div class="board-header__meta">
+              <p class="board-header__kicker">現在のステージ</p>
+              <h2 class="board-header__title" id="boardStageTitle">ステージ01｜北海道</h2>
+            </div>
+            <p class="board-header__difficulty" id="boardStageDifficulty">初級</p>
+          </header>
           <div id="sudokuBoard" class="sudoku-board" role="grid" aria-label="ナンプレ盤面"></div>
           <div class="number-pad" aria-label="数字パッド">
             <button data-value="1">1</button>

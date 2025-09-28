@@ -113,6 +113,8 @@ const elements = {
   stageNumber: document.getElementById("stageNumber"),
   stageName: document.getElementById("stageName"),
   stageDifficulty: document.getElementById("stageDifficulty"),
+  boardStageTitle: document.getElementById("boardStageTitle"),
+  boardStageDifficulty: document.getElementById("boardStageDifficulty"),
   currentTime: document.getElementById("currentTime"),
   bestTime: document.getElementById("bestTime"),
   progressFill: document.getElementById("progressFill"),
@@ -165,7 +167,6 @@ let lastFocusedElementBeforeStageModal = null;
 let stageModalOpen = false;
 let celebrationOverlayOpen = false;
 let lastFocusedBeforeCelebration = null;
-let validationActive = false;
 
 const stageNodeElements = new Map();
 const worldStageElements = new Map();
@@ -1129,26 +1130,15 @@ function updateCellDisplay(index) {
   });
   cell.classList.toggle("has-value", value !== 0);
   cell.classList.toggle("has-notes", noteValues.length > 0);
+  cell.classList.toggle("user-entry", value !== 0 && !cell.classList.contains("locked"));
 }
 
 function clearValidationState() {
-  validationActive = false;
   cells.forEach((cell) => cell.classList.remove("error"));
 }
 
-function updateValidation({ force = false } = {}) {
+function updateValidation() {
   cells.forEach((cell) => cell.classList.remove("error"));
-  const shouldValidate = force || validationActive;
-  if (!shouldValidate) {
-    return;
-  }
-  for (let index = 0; index < TOTAL_CELLS; index++) {
-    const value = values[index];
-    if (value === 0) continue;
-    if (value !== solution[index]) {
-      cells[index].classList.add("error");
-    }
-  }
 }
 
 function updateRelatedHighlights() {
@@ -1192,8 +1182,7 @@ function attemptSubmitSolution() {
     setStatus("まだ空いているマスがあります。", "warning");
     return;
   }
-  validationActive = true;
-  updateValidation({ force: true });
+  updateValidation();
   const solved = values.every((value, index) => value === solution[index]);
   if (solved) {
     checkForCompletion();
@@ -1333,6 +1322,12 @@ function updateStageSummary(stageConfig) {
   if (!stageConfig) return;
   if (elements.currentStageBadge) {
     elements.currentStageBadge.textContent = formatStageLabel(stageConfig);
+  }
+  if (elements.boardStageTitle) {
+    elements.boardStageTitle.textContent = formatStageLabel(stageConfig);
+  }
+  if (elements.boardStageDifficulty) {
+    elements.boardStageDifficulty.textContent = stageConfig.difficulty;
   }
 }
 

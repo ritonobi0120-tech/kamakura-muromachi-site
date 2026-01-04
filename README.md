@@ -1,30 +1,120 @@
-# 段階式ナンプレ 全56ステージ
+# Gym Rally (MVP)
 
-ブラウザだけで遊べる段階式のナンプレ（数独）アプリです。初級レベルから中級レベルへと少しずつ難しくなる 56 ステージを収録し、ステージの進行状況やベストタイムをブラウザに保存します。
+通知を起点に「ジム行った！」→「いつ行く？」→「やった！」のラリーが回る最小構成のアプリです。Android実機での動作確認を最優先にしています。
 
-## 主な機能
-- ステージ毎にユニーク解を持つ盤面を自動生成（初級〜中級、徐々に難化）
-- ステージ進行度とベストタイムの自動保存、リセット機能
-- ミス自動チェックと同じ数字のハイライトを常時オンで提供し、矛盾や関連マスを即座に把握
-- メモモード切り替えとヒント残数付きのスタイリッシュな補助パネルで盤面に集中
-- 確定数字での候補自動除去と Shift 操作でのクイックメモにより、1 マスに複数候補を素早く整理
-- ヒント（各ステージ 3 回まで）とキーボード対応の元に戻す／やり直す操作で詰まりづらい体験を実現
-- キーボード操作対応（数字入力、矢印/WASD 移動、Ctrl/⌘+Z・Y の履歴操作、H/Ctrl+H のヒント、Space/N でメモ切り替えなど）
-- 日本列島をなぞる冒険マップはクリア時に祝福セレブレーションから開き、次の挑戦ルートを 2 ルート以上から選択可能
-- 盤面プレイ中は余計な情報を排し、必要に応じて「マップを開く」ボタンから都道府県〜海外・奈良ルートを閲覧可能
-- Chromebook 向け最適化（集中モード、ショートカットガイド、オフライン対応、トラックパッドでも扱いやすい余白調整）
-- アイコン付きのステージ情報パネルで冒険先とタイムを一目で把握でき、盤面リセットやマップ表示などの操作がワンクリックで完結
-- 北海道から主要 6 カ国、月・太陽、奈良県まで 56 ステージを連結し、隣接ルートをたどりながらワクワク感のある分岐選択が楽しめます
+## 構成
+- フロント: Expo (React Native) + TypeScript
+  - expo-notifications / expo-auth-session / firebase modular SDK
+- バックエンド: Firebase
+  - Authentication (Google Sign-In)
+  - Firestore
+  - Cloud Functions (Node 20)
+  - Cloud Messaging (FCM)
+- 開発: Firebase Emulator Suite 対応
 
-## 遊び方
-1. `index.html` をブラウザで開きます。
-2. 北海道から自動でスタートし、ステージをクリアするとモーダルで次のルートが開放されます（常に 2 つ以上の選択肢）。
-3. 画面右側の補助機能を活用して盤面を完成させましょう（ヒントは各ステージ 3 回まで）。必要ならステージ情報パネルの「マップを開く」から冒険ルートを確認できます。
-4. 56 ステージをすべてクリアしてベストタイム更新を目指してください！
+## 事前準備
+- Node 20+
+- Firebase CLI (`npm i -g firebase-tools`)
+- Firebase プロジェクト
+  - Authentication: Google を有効化
+  - Firestore (※本番はBilling有効化が必要な可能性あり)
+  - Cloud Messaging (Android実機のFCM送信に必須)
 
-## 開発メモ
-- すべてのステージは固定 seed を用いてブラウザ側で生成しているため、オフラインでも同じ問題が再現できます。PWA 的なサービスワーカーでリソースをキャッシュするので Chromebook でも通信なしで遊べます。
-- 盤面は常にユニーク解を持つようチェックしており、初心者から中級者まで快適に遊べる難易度帯を意識しています。
-- ステージは日本列島の隣接関係をベースにした有向グラフで連結しており、序盤から常に複数の選択肢が生まれるよう調整しています。全都道府県を制覇すると海外〜宇宙を経て奈良県が最終ステージとして出現します。
-- ステージ情報パネル上部のバッジで現在のステージ名と番号を常に確認できます。
-- ワールドマップは日本地図イラスト上に都道府県のピンを重ね、実際の位置関係を意識しながら隣接ルートを辿れます。
+## 重要な決め打ち（READMEで明示）
+- タイムゾーンは `Asia/Tokyo` 固定
+- ローカル通知で Remind（30分前/時間/30分後）をスケジュール（端末依存。将来はサーバー送信へ移行可能）
+- 招待コードは `groupId` を共有（短縮化は未対応）
+
+## ディレクトリ構成
+```
+apps/mobile/   # Expo アプリ
+functions/     # Cloud Functions
+firebase.json  # Emulator 設定
+firestore.rules
+```
+
+## 環境変数
+`apps/mobile/.env` を作成し、Expo Public 変数を設定します。
+
+```
+EXPO_PUBLIC_FIREBASE_API_KEY=...
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=...
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+EXPO_PUBLIC_FIREBASE_APP_ID=...
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=...
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=...
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=...
+EXPO_PUBLIC_FUNCTIONS_EMULATOR_HOST=localhost
+```
+
+- Android の `google-services.json` / iOS の `GoogleService-Info.plist` を入れる場合、
+  - `EXPO_PUBLIC_ANDROID_GOOGLE_SERVICES=/absolute/path/to/google-services.json`
+  - `EXPO_PUBLIC_IOS_GOOGLE_SERVICES=/absolute/path/to/GoogleService-Info.plist`
+
+## Emulator での起動手順
+```
+firebase emulators:start
+```
+
+```
+cd apps/mobile
+npm install
+npm run start
+```
+
+- Expo の開発サーバーから Android エミュレーター or 実機に接続します。
+- Firestore/Functions/Auth は Emulator を使用します。
+
+## 実機でFCM通知を確認する（Android）
+1. Firebase プロジェクトの Cloud Messaging を有効化
+2. `apps/mobile` に `google-services.json` を配置（`EXPO_PUBLIC_ANDROID_GOOGLE_SERVICES` を設定）
+3. EAS Build もしくは `expo run:android` で実機向けビルド
+4. 端末でアプリ起動→通知権限を許可
+5. グループ参加→Check-in 実行で通知が届くことを確認
+
+> Emulator利用時はFCM通知は届きません。実機＋実プロジェクトが必要です。
+
+## 使い方（MVP）
+1. ログイン
+2. グループ作成 or `groupId` で参加
+3. 「ジム行った！」を押す
+4. 受信者が通知上で日付→時刻を選択
+5. plannedAt にローカルRemindが3件届く
+6. 「やった！」で Done 通知、返球が発生
+
+## 通知アクション
+- Commit Step1 (日付): `commit_day` カテゴリ
+  - TODAY / TOMORROW / DAY_AFTER / CANT
+- Commit Step2 (時刻): `commit_time` カテゴリ
+  - 07:00 / 18:00 / 19:00 / 21:00 / OTHER
+
+## Firestore 主要コレクション
+- `/users/{uid}`
+  - `fcmTokens: string[]`
+  - `settings: { quietHoursStart, quietHoursEnd, notifyEnabled }`
+- `/groups/{groupId}`
+- `/groups/{groupId}/members/{uid}`
+- `/groups/{groupId}/events/{eventId}`
+- `/groups/{groupId}/requests/{requestId}`
+- `/groups/{groupId}/counters/{yyyy-MM-dd}`
+
+## Cloud Functions
+- `checkIn(groupId)`
+- `commitSelectDay(groupId, requestId, dayKey)`
+- `commitSelectTime(groupId, requestId, timePreset | OTHER)`
+- `done(groupId)`
+- `transferRequestIfUnanswered(groupId?)`
+
+## 典型トラブル
+- Billing が必要なケース: Firestore/FCM はプロジェクト設定により Billing が必要です。
+- 通知が届かない: 実機で通知権限の許可、`google-services.json` の配置、FCM 有効化を確認してください。
+- Emulator で push できない: Emulator は FCM を送れません（実機テスト必須）。
+
+## MVP 受け入れ条件に対する対応
+- 2人グループで通知上の Commit（Step1/Step2）
+- plannedAt にローカルRemind（30分前/時間/30分後）
+- Done 後の返球（2人/3人以上で Next 選出）
+- 1日3往復で返球停止（Done通知は送る）
+- transfer は手動Callable/定期スケジュールで実行

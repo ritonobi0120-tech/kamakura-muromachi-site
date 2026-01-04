@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Button, FlatList, Text, View } from "react-native";
 import { auth, db } from "../services/firebase";
 import { collection, doc, onSnapshot, orderBy, query, where, limit, Timestamp } from "firebase/firestore";
-import { checkIn, commitSelectDay, commitSelectTime, done } from "../services/api";
+import { checkIn, commitDecline, commitSelectDay, commitSelectTime, done } from "../services/api";
 import * as Notifications from "expo-notifications";
 import { ACTIONS } from "../notifications/notifications";
 import { scheduleReminders } from "../notifications/reminders";
@@ -90,6 +90,10 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
             ? "tomorrow"
             : "day_after";
         await commitSelectDay({ groupId: data.groupId, requestId: data.requestId, dayKey: selectedDay });
+      }
+
+      if (action === ACTIONS.DAY_CANT) {
+        await commitDecline({ groupId: data.groupId, requestId: data.requestId });
       }
 
       if ([ACTIONS.TIME_0700, ACTIONS.TIME_1800, ACTIONS.TIME_1900, ACTIONS.TIME_2100].includes(action)) {

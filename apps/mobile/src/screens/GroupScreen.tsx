@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 import { auth, db } from "../services/firebase";
-import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc, increment } from "firebase/firestore";
+import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 
 export default function GroupScreen() {
   const [groupName, setGroupName] = useState("Gym Buddy");
@@ -34,9 +34,6 @@ export default function GroupScreen() {
       role: "member",
       joinedAt: serverTimestamp(),
       muted: false
-    });
-    await updateDoc(doc(db, "groups", joinId), {
-      memberCount: increment(1)
     });
     await updateDoc(doc(db, "users", uid), {
       currentGroupId: joinId,

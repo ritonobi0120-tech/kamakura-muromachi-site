@@ -24,6 +24,7 @@
 - タイムゾーンは `Asia/Tokyo` 固定
 - ローカル通知で Remind（30分前/時間/30分後）をスケジュール（端末依存。将来はサーバー送信へ移行可能）
 - 招待コードは `groupId` を共有（短縮化は未対応）
+- サイレント時間は設定保存のみ（通知抑止は未実装。必要に応じて拡張）
 
 ## ディレクトリ構成
 ```
@@ -104,6 +105,7 @@ npm run start
 - `checkIn(groupId)`
 - `commitSelectDay(groupId, requestId, dayKey)`
 - `commitSelectTime(groupId, requestId, timePreset | OTHER)`
+- `commitDecline(groupId, requestId)` (CANT)
 - `done(groupId)`
 - `transferRequestIfUnanswered(groupId?)`
 

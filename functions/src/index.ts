@@ -58,6 +58,13 @@ async function getGroupMembers(groupId: string): Promise<Member[]> {
   return membersSnap.docs.map((doc) => ({ uid: doc.id, joinedAt: doc.data().joinedAt })) as Member[];
 }
 
+async function assertGroupMember(groupId: string, uid: string) {
+  const memberSnap = await db.collection("groups").doc(groupId).collection("members").doc(uid).get();
+  if (!memberSnap.exists) {
+    throw new HttpsError("permission-denied", "not a group member");
+  }
+}
+
 async function getUserTokens(uid: string): Promise<string[]> {
   const userSnap = await db.collection("users").doc(uid).get();
   return (userSnap.data()?.fcmTokens || []) as string[];
@@ -129,6 +136,7 @@ export const checkIn = onCall(async (request) => {
   const uid = ensureAuth(request);
   const { groupId } = request.data as { groupId: string };
   if (!groupId) throw new HttpsError("invalid-argument", "groupId required");
+  await assertGroupMember(groupId, uid);
 
   const eventRef = await logEvent(groupId, "checkin", uid);
   const members = await getGroupMembers(groupId);
@@ -162,6 +170,7 @@ export const commitSelectDay = onCall(async (request) => {
   if (!groupId || !requestId || !DAY_KEYS.includes(dayKey)) {
     throw new HttpsError("invalid-argument", "invalid request");
   }
+  await assertGroupMember(groupId, uid);
 
   const requestRef = db.collection("groups").doc(groupId).collection("requests").doc(requestId);
   const snap = await requestRef.get();
@@ -202,6 +211,7 @@ export const commitSelectTime = onCall(async (request) => {
     timeCustom?: string;
   };
   if (!groupId || !requestId) throw new HttpsError("invalid-argument", "invalid request");
+  await assertGroupMember(groupId, uid);
 
   const requestRef = db.collection("groups").doc(groupId).collection("requests").doc(requestId);
   const snap = await requestRef.get();
@@ -228,10 +238,33 @@ export const commitSelectTime = onCall(async (request) => {
   return { ok: true, plannedAt: plannedAt.toISO() };
 });
 
+export const commitDecline = onCall(async (request) => {
+  const uid = ensureAuth(request);
+  const { groupId, requestId } = request.data as { groupId: string; requestId: string };
+  if (!groupId || !requestId) throw new HttpsError("invalid-argument", "invalid request");
+  await assertGroupMember(groupId, uid);
+
+  const requestRef = db.collection("groups").doc(groupId).collection("requests").doc(requestId);
+  const snap = await requestRef.get();
+  if (!snap.exists) throw new HttpsError("not-found", "request not found");
+  const requestData = snap.data();
+  if (requestData?.assigneeUid !== uid) throw new HttpsError("permission-denied", "not assignee");
+
+  await requestRef.update({
+    state: "expired" as RequestState,
+    updatedAt: FieldValue.serverTimestamp()
+  });
+
+  await logEvent(groupId, "system", uid, { note: "commitDeclined" });
+
+  return { ok: true };
+});
+
 export const done = onCall(async (request) => {
   const uid = ensureAuth(request);
   const { groupId } = request.data as { groupId: string };
   if (!groupId) throw new HttpsError("invalid-argument", "groupId required");
+  await assertGroupMember(groupId, uid);
 
   const eventRef = await logEvent(groupId, "done", uid);
   const members = await getGroupMembers(groupId);
@@ -317,7 +350,27 @@ export const transferRequestIfUnanswered = onCall(async (request) => {
     for (const reqDoc of requestsSnap.docs) {
       const data = reqDoc.data();
       const deadline = (data.deadlineAt as Timestamp | undefined)?.toDate();
-      if (!deadline || deadline > now.toJSDate()) continue;
+      const lastNotifiedAt = (data.lastNotifiedAt as Timestamp | undefined)?.toDate();
+      if (deadline && deadline > now.toJSDate()) {
+        if (!lastNotifiedAt || now.diff(DateTime.fromJSDate(lastNotifiedAt), "minutes").minutes >= 60) {
+          const tokens = await getUserTokens(data.assigneeUid);
+          await sendToTokens(
+            tokens,
+            "リマインド",
+            "返信が必要です",
+            {
+              type: "commit",
+              step: "day",
+              groupId: gid,
+              requestId: reqDoc.id
+            },
+            "commit_day"
+          );
+          await reqDoc.ref.update({ lastNotifiedAt: FieldValue.serverTimestamp() });
+        }
+        continue;
+      }
+      if (!deadline) continue;
 
       const currentAssignee = data.assigneeUid as string;
       const nextUid = await selectNext(gid, currentAssignee);
@@ -370,7 +423,27 @@ export const transferRequestIfUnansweredScheduled = onSchedule("every 60 minutes
     for (const reqDoc of requestsSnap.docs) {
       const data = reqDoc.data();
       const deadline = (data.deadlineAt as Timestamp | undefined)?.toDate();
-      if (!deadline || deadline > now.toJSDate()) continue;
+      const lastNotifiedAt = (data.lastNotifiedAt as Timestamp | undefined)?.toDate();
+      if (deadline && deadline > now.toJSDate()) {
+        if (!lastNotifiedAt || now.diff(DateTime.fromJSDate(lastNotifiedAt), "minutes").minutes >= 60) {
+          const tokens = await getUserTokens(data.assigneeUid);
+          await sendToTokens(
+            tokens,
+            "リマインド",
+            "返信が必要です",
+            {
+              type: "commit",
+              step: "day",
+              groupId: gid,
+              requestId: reqDoc.id
+            },
+            "commit_day"
+          );
+          await reqDoc.ref.update({ lastNotifiedAt: FieldValue.serverTimestamp() });
+        }
+        continue;
+      }
+      if (!deadline) continue;
 
       const currentAssignee = data.assigneeUid as string;
       const nextUid = await selectNext(gid, currentAssignee);
